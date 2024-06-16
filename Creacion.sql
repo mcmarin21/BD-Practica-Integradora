@@ -1,3 +1,4 @@
+drop database if exists Autolavado;
 create database Autolavado;
 create table estado (
 	id_estado int primary key auto_increment,
@@ -61,9 +62,11 @@ create table promocion (
 create table cliente (
 	curp char(16) primary key,
     id_membresia int not null,
+    id_direccion int not null,
     nombre varchar(50) not null,
     apellido_paterno varchar(50) not null,
-    apellido_materno varchar(50) not null
+    apellido_materno varchar(50) not null,
+    fecha_registro date
 );
 create table tipos_pago (
 	id_tipos_pago int primary key auto_increment,
