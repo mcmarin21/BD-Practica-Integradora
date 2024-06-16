@@ -1,111 +1,156 @@
-drop database if exists Autolavado;
-create database Autolavado;
-create table estado (
-	id_estado int primary key auto_increment,
-    estado varchar(20)
+DROP DATABASE IF EXISTS Autolavado;
+CREATE DATABASE Autolavado;
+USE Autolavado;
+
+CREATE TABLE estado (
+    id_estado INT PRIMARY KEY AUTO_INCREMENT,
+    estado VARCHAR(20)
 );
-create table direccion (
-	id_direccion int primary key auto_increment,
-    id_estado int not null,
-    codigo_postal int not null,
-    calle varchar(250) not null,
-    numero_exterior int not null,
-    numero_interior int
+
+CREATE TABLE direccion (
+    id_direccion INT PRIMARY KEY AUTO_INCREMENT,
+    id_estado INT NOT NULL,
+    codigo_postal INT NOT NULL,
+    calle VARCHAR(250) NOT NULL,
+    numero_exterior INT NOT NULL,
+    numero_interior INT,
+    FOREIGN KEY (id_estado) REFERENCES estado(id_estado)
 );
-create table sucursal (
-	id_sucursal int primary key auto_increment,
-    id_direccion int not null,
-    nombre varchar(255) not null
+
+CREATE TABLE tipo_contacto (
+    id_tipo_contacto INT PRIMARY KEY AUTO_INCREMENT,
+    tipo VARCHAR(30)
 );
-create table empleado (
-	numero_empleado int primary key auto_increment,
-    id_sucursal int not null,
-    id_puesto int not null,
-    nombre varchar(50) not null,
-    apellido_paterno varchar(50) not null,
-    apellido_materno varchar(50) not null
+
+CREATE TABLE contacto (
+    id_contacto INT PRIMARY KEY AUTO_INCREMENT,
+    id_tipo_contacto INT NOT NULL,
+    contacto VARCHAR(76),
+    FOREIGN KEY (id_tipo_contacto) REFERENCES tipo_contacto(id_tipo_contacto)
 );
-create table cronograma (
-	id_cronograma int primary key auto_increment,
-    numero_empleado int not null,
-    id_horario int not null
+
+CREATE TABLE puesto (
+    id_puesto INT PRIMARY KEY AUTO_INCREMENT,
+    puesto VARCHAR(50) NOT NULL,
+    salario DECIMAL (6,2) NOT NULL
 );
-create table puesto (
-	id_puesto int primary key auto_increment,
-    puesto varchar(50) not null,
-    salario decimal (6,2) not null
+
+CREATE TABLE horario (
+    id_horario INT PRIMARY KEY AUTO_INCREMENT,
+    hora_entrada TIME,
+    hora_salida TIME
 );
-create table horario (
-	id_horario int primary key auto_increment,
-    hora_entrada time,
-    hora_salida time
+
+CREATE TABLE sucursal (
+    id_sucursal INT PRIMARY KEY AUTO_INCREMENT,
+    id_direccion INT NOT NULL,
+    nombre VARCHAR(255) NOT NULL,
+    FOREIGN KEY (id_direccion) REFERENCES direccion(id_direccion)
 );
-create table contacto (
-	id_contacto int primary key auto_increment,
-    id_tipo_contacto int not null,
-    contacto varchar(76)
+
+CREATE TABLE empleado (
+    numero_empleado INT PRIMARY KEY AUTO_INCREMENT,
+    id_sucursal INT NOT NULL,
+    id_puesto INT NOT NULL,
+    nombre VARCHAR(50) NOT NULL,
+    apellido_paterno VARCHAR(50) NOT NULL,
+    apellido_materno VARCHAR(50) NOT NULL,
+    FOREIGN KEY (id_sucursal) REFERENCES sucursal(id_sucursal),
+    FOREIGN KEY (id_puesto) REFERENCES puesto(id_puesto)
 );
-create table tipo_contacto (
-	id_tipo_contacto int primary key auto_increment,
-    tipo varchar(30)
+
+CREATE TABLE cronograma (
+    id_cronograma INT PRIMARY KEY AUTO_INCREMENT,
+    numero_empleado INT NOT NULL,
+    id_horario INT NOT NULL,
+    FOREIGN KEY (numero_empleado) REFERENCES empleado(numero_empleado),
+    FOREIGN KEY (id_horario) REFERENCES horario(id_horario)
 );
-create table membresia (
-	id_membresia int primary key auto_increment,
-    membresia varchar(50),
-    condicion varchar(250)
+
+CREATE TABLE membresia (
+	id_membresia INT PRIMARY KEY AUTO_INCREMENT,
+	membresia VARCHAR(50),
+	condicion VARCHAR(250)
 );
-create table promocion (
-	id_promocion int primary key auto_increment,
-    descripcion varchar(50),
-    condicion varchar(250)
+
+CREATE TABLE promocion (
+	id_promocion INT PRIMARY KEY AUTO_INCREMENT,
+	descripcion VARCHAR(50),
+	condicion VARCHAR(250)
 );
-create table cliente (
-	curp char(16) primary key,
-    id_membresia int not null,
-    id_direccion int not null,
-    nombre varchar(50) not null,
-    apellido_paterno varchar(50) not null,
-    apellido_materno varchar(50) not null,
-    fecha_registro date
+
+CREATE TABLE cliente (
+	curp CHAR(16) PRIMARY KEY,
+	id_membresia INT NOT NULL,
+	id_direccion INT NOT NULL,
+	nombre VARCHAR(50) NOT NULL,
+	apellido_paterno VARCHAR(50) NOT NULL,
+	apellido_materno VARCHAR(50) NOT NULL,
+	fecha_registro DATE,
+	FOREIGN KEY (id_membresia) REFERENCES membresia(id_membresia),
+	FOREIGN KEY (id_direccion) REFERENCES direccion(id_direccion)
 );
-create table tipos_pago (
-	id_tipos_pago int primary key auto_increment,
-    tipo varchar(25)
+
+CREATE TABLE tipos_pago (
+	id_tipos_pago INT PRIMARY KEY AUTO_INCREMENT,
+	tipo VARCHAR(25)
 );
-create table paquete (
-	id_paquete int primary key auto_increment,
-    id_promocion int,
-    promocion varchar(50),
-    descripcion varchar(250),
-    precio decimal(6,2)
+
+CREATE TABLE paquete (
+	id_paquete INT PRIMARY KEY AUTO_INCREMENT,
+	id_promocion INT,
+	promocion VARCHAR(50),
+	descripcion VARCHAR(250),
+	precio DECIMAL(6,2),
+	FOREIGN KEY (id_promocion) REFERENCES promocion(id_promocion)
 );
-create table coche (
-	placa char(8),
-    curp char(18),
-    modelo varchar(50),
-    año int,
-    color varchar(25)
+
+CREATE TABLE coche (
+	placa CHAR(8) PRIMARY KEY,
+	curp CHAR(18),
+	modelo VARCHAR(50),
+	año INT,
+	color VARCHAR(25),
+	FOREIGN KEY (curp) REFERENCES cliente(curp)
 );
-create table ticket (
-	id_ticket int primary key auto_increment,
-    cliente char(18) not null,
-    operador char(18) not null,
-    coche char(8) not null,
-    sucursal int not null,
-    tipo_pago int not null,
-    paquete int not null,
-    promocion int not null,
-    comentario varchar(250),
-    subtotal decimal(8,2),
-    total decimal(8,2)
+
+CREATE TABLE ticket (
+	id_ticket INT PRIMARY KEY AUTO_INCREMENT,
+	cliente CHAR(18) NOT NULL,
+	operador INT NOT NULL,
+	coche CHAR(8) NOT NULL,
+	sucursal INT NOT NULL,
+	tipo_pago INT NOT NULL,
+	paquete INT NOT NULL,
+	promocion INT,
+	comentario VARCHAR(250),
+	subtotal DECIMAL(8,2),
+	total DECIMAL(8,2),
+	FOREIGN KEY (cliente) REFERENCES cliente(curp),
+	FOREIGN KEY (operador) REFERENCES empleado(numero_empleado),
+    FOREIGN KEY (coche) REFERENCES coche(placa),
+	FOREIGN KEY (sucursal) REFERENCES sucursal(id_sucursal),
+	FOREIGN KEY (tipo_pago) REFERENCES tipos_pago(id_tipos_pago),
+	FOREIGN KEY (paquete) REFERENCES paquete(id_paquete),
+	FOREIGN KEY (promocion) REFERENCES promocion(id_promocion)
 );
-create table compra (
-	id_compra int primary key auto_increment,
-    id_ticket int not null,
-    id_paquete int not null
+
+CREATE TABLE compra (
+	id_compra INT PRIMARY KEY AUTO_INCREMENT,
+	id_ticket INT NOT NULL,
+	id_paquete INT NOT NULL,
+	cantidad INT,
+	precio DECIMAL(6,2),
+	FOREIGN KEY (id_ticket) REFERENCES ticket(id_ticket),
+	FOREIGN KEY (id_paquete) REFERENCES paquete(id_paquete)
 );
-create table promocion_sucursal (
-	id_promocion_sucursal int primary key auto_increment,
-    id_sucursal int not null,
-    id_promocion int not null
+
+CREATE TABLE promocion_sucursal (
+	id_promocion_sucursal INT PRIMARY KEY AUTO_INCREMENT,
+    id_promocion INT NOT NULL,
+    id_sucursal INT NOT NULL,
+    fecha_inicio DATE NOT NULL,
+    fecha_fin DATE NOT NULL,
+    FOREIGN KEY (id_promocion) REFERENCES promocion(id_promocion),
+    FOREIGN KEY (id_sucursal) REFERENCES sucursal(id_sucursal)
 );
