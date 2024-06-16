@@ -1,3 +1,5 @@
+USE Autolavado;
+
 CREATE VIEW ClientesPorSucursal AS
 SELECT 
     cliente.nombre, 
