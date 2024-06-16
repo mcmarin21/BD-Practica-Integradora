@@ -69,3 +69,94 @@ BEGIN
     WHERE empleado.nombre LIKE CONCAT('%', $nombre, '%')
     GROUP BY cliente.curp, paquete.descripcion;
 END; //
+
+CREATE PROCEDURE AgregarSucursal(
+    IN $nombre VARCHAR(50),
+    IN $direccion VARCHAR(100),
+    IN $telefono VARCHAR(15)
+)
+BEGIN
+    DECLARE $existe INT DEFAULT 0;
+    SELECT COUNT(*) INTO $existe
+    FROM sucursal
+    WHERE nombre = $nombre;
+    IF $existe > 0 THEN
+        SELECT 'La sucursal ya existe.';
+    ELSE
+        INSERT INTO sucursal (nombre, direccion, telefono)
+        VALUES ($nombre, $direccion, $telefono);
+        SELECT 'Sucursal agregada exitosamente.';
+    END IF;
+END; //
+
+CREATE PROCEDURE AgregarEmpleado(
+    IN $numero_empleado INT,
+    IN $id_puesto INT,
+    IN $id_horario INT,
+    IN $nombre VARCHAR(50),
+    IN $apellido_paterno VARCHAR(50),
+    IN $apellido_materno VARCHAR(50),
+    IN $fecha_nacimiento DATE,
+    IN $curp CHAR(18)
+)
+BEGIN
+    DECLARE $existeEmpleado INT DEFAULT 0;
+    SELECT COUNT(*) INTO $existeEmpleado
+    FROM empleado
+    WHERE numero_empleado = $numero_empleado;
+    IF $existeEmpleado > 0 THEN
+        SELECT 'El empleado ya existe.';
+    ELSE
+        START TRANSACTION;
+        INSERT INTO empleado (numero_empleado, id_puesto, nombre, apellido_paterno, apellido_materno, fecha_nacimiento, curp)
+        VALUES ($numero_empleado, $id_puesto, $nombre, $apellido_paterno, $apellido_materno, $fecha_nacimiento, $curp);
+        INSERT INTO cronograma (numero_empleado, id_horario)
+        VALUES ($numero_empleado, $id_horario);
+        COMMIT;
+        SELECT 'Empleado agregado exitosamente.';
+    END IF;
+END; //
+
+CREATE PROCEDURE AgregarCliente(
+    IN $curp CHAR(18),
+    IN $membresia INT,
+    IN $direccion INT,
+    IN $nombre VARCHAR(50),
+    IN $apellido_paterno VARCHAR(50),
+    IN $apellido_materno VARCHAR(50),
+    IN $fecha DATE,
+    IN $placa CHAR(8),
+    IN $modelo VARCHAR(50),
+    IN $ano INT,
+    IN $color VARCHAR(25),
+    IN $tipo_contacto INT,
+    IN $contacto VARCHAR(76)
+)
+BEGIN
+    DECLARE $existeCliente INT DEFAULT 0;
+    DECLARE $existeCoche INT DEFAULT 0;
+    
+    SELECT COUNT(*) INTO $existeCliente
+    FROM cliente
+    WHERE curp = $curp;
+    
+    SELECT COUNT(*) INTO $existeCoche
+    FROM coche
+    WHERE placa = $placa;
+    
+    IF $existeCliente > 0 THEN
+        SELECT 'El cliente ya existe.';
+    ELSEIF $existeCoche > 0 THEN
+        SELECT 'El coche con esa placa ya existe.';
+    ELSE
+        START TRANSACTION;
+        INSERT INTO cliente (curp, id_membresia, id_direccion, nombre, apellido_paterno, apellido_materno, fecha_registro)
+        VALUES ($curp, $membresia, $direccion, $nombre, $apellido_paterno, $apellido_materno, $fecha);
+        INSERT INTO coche (placa, curp, modelo, ano, color)
+        VALUES ($placa, $curp, $modelo, $ano, $color);
+        INSERT INTO contacto (curp, id_tipo_contacto, contacto)
+        VALUES ($curp, $tipo_contacto, $contacto);  
+        COMMIT;
+        SELECT 'Cliente agregado exitosamente.';
+    END IF;
+END;

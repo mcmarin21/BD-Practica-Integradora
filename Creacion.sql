@@ -22,13 +22,6 @@ CREATE TABLE tipo_contacto (
     tipo VARCHAR(30)
 );
 
-CREATE TABLE contacto (
-    id_contacto INT PRIMARY KEY AUTO_INCREMENT,
-    id_tipo_contacto INT NOT NULL,
-    contacto VARCHAR(76),
-    FOREIGN KEY (id_tipo_contacto) REFERENCES tipo_contacto(id_tipo_contacto)
-);
-
 CREATE TABLE puesto (
     id_puesto INT PRIMARY KEY AUTO_INCREMENT,
     puesto VARCHAR(50) NOT NULL,
@@ -80,7 +73,7 @@ CREATE TABLE promocion (
 );
 
 CREATE TABLE cliente (
-	curp CHAR(16) PRIMARY KEY,
+	curp CHAR(18) PRIMARY KEY,
 	id_membresia INT NOT NULL,
 	id_direccion INT NOT NULL,
 	nombre VARCHAR(50) NOT NULL,
@@ -91,6 +84,15 @@ CREATE TABLE cliente (
 	FOREIGN KEY (id_direccion) REFERENCES direccion(id_direccion)
 );
 
+CREATE TABLE contacto (
+    id_contacto INT PRIMARY KEY AUTO_INCREMENT,
+    curp CHAR(18) NOT NULL,
+    id_tipo_contacto INT NOT NULL,
+    contacto VARCHAR(76),
+    FOREIGN KEY (curp) REFERENCES cliente(curp),
+    FOREIGN KEY (id_tipo_contacto) REFERENCES tipo_contacto(id_tipo_contacto)
+);
+
 CREATE TABLE tipos_pago (
 	id_tipos_pago INT PRIMARY KEY AUTO_INCREMENT,
 	tipo VARCHAR(25)
@@ -98,11 +100,9 @@ CREATE TABLE tipos_pago (
 
 CREATE TABLE paquete (
 	id_paquete INT PRIMARY KEY AUTO_INCREMENT,
-	id_promocion INT,
 	promocion VARCHAR(50),
 	descripcion VARCHAR(250),
-	precio DECIMAL(6,2),
-	FOREIGN KEY (id_promocion) REFERENCES promocion(id_promocion)
+	precio DECIMAL(6,2)
 );
 
 CREATE TABLE coche (
