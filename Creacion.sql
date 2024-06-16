@@ -4,13 +4,13 @@ USE Autolavado;
 
 CREATE TABLE estado (
     id_estado INT PRIMARY KEY AUTO_INCREMENT,
-    estado VARCHAR(20)
+    estado VARCHAR(50) NOT NULL
 );
 
 CREATE TABLE direccion (
     id_direccion INT PRIMARY KEY AUTO_INCREMENT,
     id_estado INT NOT NULL,
-    codigo_postal INT NOT NULL,
+    codigo_postal INT(5) NOT NULL,
     calle VARCHAR(250) NOT NULL,
     numero_exterior INT NOT NULL,
     numero_interior INT,
@@ -30,8 +30,8 @@ CREATE TABLE puesto (
 
 CREATE TABLE horario (
     id_horario INT PRIMARY KEY AUTO_INCREMENT,
-    hora_entrada TIME,
-    hora_salida TIME
+    hora_entrada TIME NOT NULL,
+    hora_salida TIME NOT NULL
 );
 
 CREATE TABLE sucursal (
@@ -45,7 +45,7 @@ CREATE TABLE empleado (
     numero_empleado INT PRIMARY KEY AUTO_INCREMENT,
     id_sucursal INT NOT NULL,
     id_puesto INT NOT NULL,
-    nombre VARCHAR(50) NOT NULL,
+    nombre VARCHAR(100) NOT NULL,
     apellido_paterno VARCHAR(50) NOT NULL,
     apellido_materno VARCHAR(50) NOT NULL,
     FOREIGN KEY (id_sucursal) REFERENCES sucursal(id_sucursal),
@@ -62,21 +62,21 @@ CREATE TABLE cronograma (
 
 CREATE TABLE membresia (
 	id_membresia INT PRIMARY KEY AUTO_INCREMENT,
-	membresia VARCHAR(50),
-	condicion VARCHAR(250)
+	membresia VARCHAR(50) NOT NULL,
+	condicion VARCHAR(250) NOT NULL
 );
 
 CREATE TABLE promocion (
 	id_promocion INT PRIMARY KEY AUTO_INCREMENT,
-	descripcion VARCHAR(50),
-	condicion VARCHAR(250)
+	descripcion VARCHAR(50) NOT NULL,
+	condicion VARCHAR(250) NOT NULL
 );
 
 CREATE TABLE cliente (
 	curp CHAR(18) PRIMARY KEY,
 	id_membresia INT NOT NULL,
 	id_direccion INT NOT NULL,
-	nombre VARCHAR(50) NOT NULL,
+	nombre VARCHAR(100) NOT NULL,
 	apellido_paterno VARCHAR(50) NOT NULL,
 	apellido_materno VARCHAR(50) NOT NULL,
 	fecha_registro DATE,
@@ -95,7 +95,7 @@ CREATE TABLE contacto (
 
 CREATE TABLE tipos_pago (
 	id_tipos_pago INT PRIMARY KEY AUTO_INCREMENT,
-	tipo VARCHAR(25)
+	tipo VARCHAR(25) NOT NULL
 );
 
 CREATE TABLE paquete (
