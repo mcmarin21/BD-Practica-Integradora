@@ -120,7 +120,6 @@ CREATE TABLE ticket (
 	coche CHAR(8) NOT NULL,
 	sucursal INT NOT NULL,
 	tipo_pago INT NOT NULL,
-	paquete INT NOT NULL,
 	promocion INT,
 	comentario VARCHAR(250),
     fecha datetime,
@@ -131,7 +130,6 @@ CREATE TABLE ticket (
     FOREIGN KEY (coche) REFERENCES coche(placa),
 	FOREIGN KEY (sucursal) REFERENCES sucursal(id_sucursal),
 	FOREIGN KEY (tipo_pago) REFERENCES tipos_pago(id_tipos_pago),
-	FOREIGN KEY (paquete) REFERENCES paquete(id_paquete),
 	FOREIGN KEY (promocion) REFERENCES promocion(id_promocion)
 );
 

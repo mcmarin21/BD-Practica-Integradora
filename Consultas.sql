@@ -21,7 +21,7 @@ JOIN tipos_pago ON ticket.tipo_pago = tipos_pago.id_tipos_pago
 WHERE ticket.fecha BETWEEN DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND CURDATE()
 GROUP BY dia, ticket.sucursal, tipos_pago.tipo;
 
-CREATE VIEW ReportePromedioVentas AS
+CREATE VIEW PromedioVentas AS
 SELECT 
     sucursal.nombre AS sucursal,
     YEAR(ticket.fecha) AS año,
@@ -33,7 +33,7 @@ WHERE ticket.fecha >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
 GROUP BY sucursal, año, mes
 ORDER BY promedio DESC;
 
-CREATE VIEW ReportePromocionesDiarias AS
+CREATE VIEW PromocionesDiarias AS
 SELECT 
     ticket.fecha,
     cliente.nombre AS cliente,
@@ -45,3 +45,37 @@ JOIN cliente ON ticket.cliente = cliente.curp
 JOIN empleado ON ticket.operador = empleado.numero_empleado
 JOIN sucursal ON ticket.sucursal = sucursal.id_sucursal
 JOIN paquete ON ticket.paquete = paquete.id_paquete;
+
+CREATE VIEW ClientesAtendidos AS
+SELECT 
+    ticket.fecha,
+    COUNT(*) AS 'total clientes',
+    paquete.descripcion AS paquete,
+    coche.modelo AS modelo,
+    coche.color AS color,
+    sucursal.nombre AS sucursal,
+    empleado.nombre AS operador
+FROM ticket
+JOIN paquete ON ticket.paquete = paquete.id_paquete
+JOIN coche ON ticket.coche = coche.placa
+JOIN sucursal ON ticket.sucursal = sucursal.id_sucursal
+JOIN empleado ON ticket.operador = empleado.numero_empleado
+GROUP BY ticket.fecha;
+
+CREATE VIEW ComentariosClientes AS
+SELECT 
+    ticket.fecha,
+    ticket.comentario,
+    paquete.descripcion AS 'tipo servicio'
+FROM ticket
+JOIN paquete ON ticket.paquete = paquete.id_paquete;
+
+CREATE VIEW OperacionesExcedentes AS
+SELECT 
+    WEEK(ticket.fecha) AS semana_del_año,
+    tipos_pago.tipo AS tipo_operacion,
+    COUNT(*) AS total_clientes_atendidos
+FROM ticket
+JOIN tipos_pago ON ticket.tipo_pago = tipos_pago.id_tipos_pago
+GROUP BY semana_del_año, tipos_pago.tipo
+HAVING total_clientes_atendidos > 20;
