@@ -100,7 +100,6 @@ CREATE TABLE tipos_pago (
 
 CREATE TABLE paquete (
 	id_paquete INT PRIMARY KEY AUTO_INCREMENT,
-	promocion VARCHAR(50),
 	descripcion VARCHAR(250),
 	precio DECIMAL(6,2)
 );
@@ -124,6 +123,7 @@ CREATE TABLE ticket (
 	paquete INT NOT NULL,
 	promocion INT,
 	comentario VARCHAR(250),
+    fecha datetime,
 	subtotal DECIMAL(8,2),
 	total DECIMAL(8,2),
 	FOREIGN KEY (cliente) REFERENCES cliente(curp),
