@@ -83,7 +83,7 @@ BEGIN
     IF $existe > 0 THEN
         SELECT 'La sucursal ya existe.';
     ELSE
-        INSERT INTO sucursal (nombre, direccion, telefono)
+        INSERT INTO sucursal (nombre, id_direccion, telefono)
         VALUES ($nombre, $direccion, $telefono);
         SELECT 'Sucursal agregada exitosamente.';
     END IF;
