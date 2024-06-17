@@ -694,22 +694,30 @@ END; //
 
 CREATE PROCEDURE sp_AgregarPromocionSucursal()
 BEGIN
-    INSERT INTO Promocion_sucursal (descripcion, condicion) VALUES ('Descuento del 10%', 'compra mínima de $1000');
-    INSERT INTO Promocion_sucursal (descripcion, condicion) VALUES ('Descuento del 20%', 'compra mínima de $2000');
-    INSERT INTO Promocion_sucursal (descripcion, condicion) VALUES ('Descuento del 30%', 'compra mínima de $3000');
-    INSERT INTO Promocion_sucursal (descripcion, condicion) VALUES ('Descuento del 40%', 'compra mínima de $4000');
-    INSERT INTO Promocion_sucursal (descripcion, condicion) VALUES ('Descuento del 50%', 'compra mínima de $5000');
+    INSERT INTO Promocion_sucursal (id_promocion, id_sucursal) VALUES (1, 1);
+    INSERT INTO Promocion_sucursal (id_promocion, id_sucursal) VALUES (2, 2);
+    INSERT INTO Promocion_sucursal (id_promocion, id_sucursal) VALUES (3, 3);
+    INSERT INTO Promocion_sucursal (id_promocion, id_sucursal) VALUES (4, 4);
+    INSERT INTO Promocion_sucursal (id_promocion, id_sucursal) VALUES (5, 5);
 END; //
 
 CREATE PROCEDURE sp_ActualizarPromocionSucursal(
     IN $id_promocion_sucursal INT,
-    IN $descripcion VARCHAR(50),
-    IN $condicion VARCHAR(50)
+    IN $id_promocion INT,
+    IN $id_sucursal INT
 )
 BEGIN
     UPDATE promocion_sucursal
-    SET descripcion = $descripcion,
-        condicion = $condicion
+    SET id_promocion = $id_promocion,
+        id_sucursal = $id_sucursal
+    WHERE id_promocion_sucursal = $id_promocion_sucursal;
+END; //
+
+CREATE PROCEDURE sp_EliminarPromocionSucursal(
+    IN $id_promocion_sucursal INT
+)
+BEGIN
+    DELETE FROM promocion_sucursal
     WHERE id_promocion_sucursal = $id_promocion_sucursal;
 END; //
 
