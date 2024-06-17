@@ -513,15 +513,15 @@ END; //
 
 CREATE PROCEDURE sp_AgregarContacto()
 BEGIN
-    INSERT INTO contacto (curp, id_tipo_contacto, tipo) 
+    INSERT INTO contacto (curp, id_tipo_contacto, contacto) 
     VALUES ('RFC123456789', 1, '555-1234');
-    INSERT INTO contacto (curp, id_tipo_contacto, tipo) 
+    INSERT INTO contacto (curp, id_tipo_contacto, contacto) 
     VALUES ('RFC123456789', 2, 'juan.angel@example.com');
-    INSERT INTO contacto (curp, id_tipo_contacto, tipo) 
+    INSERT INTO contacto (curp, id_tipo_contacto, contacto) 
     VALUES ('RFC987654321', 1, '555-5678');
-    INSERT INTO contacto (curp, id_tipo_contacto, tipo) 
+    INSERT INTO contacto (curp, id_tipo_contacto, contacto) 
     VALUES ('RFC987654321', 3, 'Calle 123, Col. Centro');
-    INSERT INTO contacto (curp, id_tipo_contacto, tipo) 
+    INSERT INTO contacto (curp, id_tipo_contacto, contacto) 
     VALUES ('RFC111111111', 4, '@juanitoangelito');
 END; //
 
