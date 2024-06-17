@@ -8,20 +8,31 @@ CREATE TABLE VentasDiarias (
     FOREIGN KEY (id_paquete) REFERENCES paquete(id_paquete)
 );
 
-DELIMITER //
-CREATE TRIGGER ContabilizarVentas AFTER INSERT ON ticket
+drop trigger if exists ContabilizarVentas;
+
+delimiter //
+
+CREATE TRIGGER ContabilizarVentas AFTER INSERT ON compra
 FOR EACH ROW
-BEGIN
-    DECLARE total_venta DECIMAL(10,2);
-    SELECT SUM(subtotal) INTO total_venta
-    FROM ticket
-    WHERE fecha = NEW.fecha AND paquete = NEW.paquete;
-    IF EXISTS (SELECT * FROM VentasDiarias WHERE fecha = NEW.fecha AND id_paquete = NEW.paquete) THEN
-        UPDATE VentasDiarias
+BEGIN 
+
+	DECLARE total_venta DECIMAL(10,3);
+    
+    SELECT SUM(ticket.subtotal) into total_venta
+    from compra
+    inner join ticket
+    on ticket.id_ticket = compra.id_ticket
+    where ticket.fecha = current_date() and compra.paquete = NEW.id_paquete;
+    
+    IF EXISTS (SELECT * FROM VentasPorDia WHERE fecha = current_date() AND id_paquete = NEW.id_paquete) then
+		UPDATE VentasPorDia
         SET total_ventas = total_venta
-        WHERE fecha = NEW.fecha AND id_paquete = NEW.paquete;
-    ELSE
-        INSERT INTO VentasDiarias (fecha, id_paquete, total_ventas)
-        VALUES (NEW.fecha, NEW.paquete, total_venta);
+        WHERE fecha = current_date() AND id_paquete = NEW.id_paquete;
+	ELSE
+        INSERT INTO VentasPorDia (fecha, id_paquete, total_ventas)
+        VALUES (current_date(), NEW.id_paquete, total_venta);
     END IF;
-END//
+
+END;//
+
+delimiter ;
