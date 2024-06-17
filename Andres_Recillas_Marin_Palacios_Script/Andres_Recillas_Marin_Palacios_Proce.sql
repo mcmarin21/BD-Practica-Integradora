@@ -2,359 +2,749 @@ USE Autolavado;
 
 DELIMITER //
 
+# 2. Reporte diario de ventas y tipos de servicio
 CREATE PROCEDURE ReporteDiarioVentas()
 BEGIN
-    SELECT paquete.descripcion AS 'Tipo de servicio', COUNT(*) AS 'Numero de ventas', SUM(ticket.total) AS Total
-    FROM ticket
-    INNER JOIN paquete ON ticket.paquete = paquete.id_paquete
-    WHERE DATE(ticket.fecha) = CURDATE()
-    GROUP BY paquete.descripcion;
+    SELECT 
+        p.descripcion AS 'Tipo de servicio',
+        COUNT(*) AS 'Numero de ventas',
+        SUM(t.total) AS 'Total'
+    FROM 
+        ticket t
+    INNER JOIN 
+        paquete p ON t.paquete = p.id_paquete
+    WHERE 
+        DATE(t.fecha) = CURDATE()
+    GROUP BY 
+        p.descripcion;
 END; //
 
-CREATE PROCEDURE BuscarCliente(
-	IN $nombre VARCHAR(50)
+# 9. Buscar cliente por nombre
+CREATE PROCEDURE BuscarCliente(IN $nombre VARCHAR(50))
+BEGIN
+    SELECT 
+        c.nombre, c.apellido_paterno, c.apellido_materno,
+        m.membresia,
+        p.descripcion AS 'Ultimos 10 dias de servicios'
+    FROM 
+        cliente c
+    INNER JOIN 
+        membresia m ON c.id_membresia = m.id_membresia
+    INNER JOIN 
+        ticket t ON c.curp = t.cliente
+    INNER JOIN 
+        paquete p ON t.paquete = p.id_paquete
+    WHERE 
+        c.nombre LIKE CONCAT('%', $nombre, '%')
+    AND 
+        t.fecha >= DATE_SUB(CURDATE(), INTERVAL 10 DAY);
+END; //
+
+# 11. Buscar empleado por número de empleado
+CREATE PROCEDURE BuscarEmpleado(IN $numero_empleado INT)
+BEGIN
+    SELECT 
+        e.nombre, e.apellido_paterno, e.apellido_materno,
+        s.nombre AS 'Sucursal',
+        SUM(t.total) AS 'Total de ventas',
+        AVG(t.total) AS 'Promedio de ventas'
+    FROM 
+        empleado e
+    INNER JOIN 
+        sucursal s ON e.id_sucursal = s.id_sucursal
+    INNER JOIN 
+        ticket t ON e.numero_empleado = t.operador
+    WHERE 
+        e.numero_empleado = $numero_empleado
+    AND 
+        t.fecha >= DATE_SUB(CURDATE(), INTERVAL 30 DAY);
+END; //
+
+# 12. Operadores del mes
+CREATE PROCEDURE OperadoresDelMes()
+BEGIN
+    SELECT 
+        e.nombre, e.apellido_paterno, e.apellido_materno,
+        s.nombre AS 'Sucursal',
+        SUM(t.total) AS 'Total de ventas',
+        CASE 
+            WHEN SUM(t.total) > 1000 THEN SUM(t.total) * 0.05
+            ELSE 0
+        END AS 'Bono',
+        CASE 
+            WHEN SUM(t.total) > 1000 THEN 'Operador del mes'
+            ELSE ''
+        END AS 'Mensaje'
+    FROM 
+        empleado e
+    INNER JOIN 
+        sucursal s ON e.id_sucursal = s.id_sucursal
+    INNER JOIN 
+        ticket t ON e.numero_empleado = t.operador
+    GROUP BY 
+        e.numero_empleado;
+END; //
+
+# 13. Ventas por sucursal
+CREATE PROCEDURE VentasPorSucursal(IN $sucursal INT, IN $fecha_inicio DATE, IN $fecha_fin DATE)
+BEGIN
+    SELECT 
+        s.nombre AS 'Sucursal',
+        SUM(t.total) AS 'Total de ventas'
+    FROM 
+        sucursal s
+    INNER JOIN 
+        ticket t ON s.id_sucursal = t.sucursal
+    WHERE 
+        s.id_sucursal = $sucursal
+    AND 
+        t.fecha >= $fecha_inicio
+    AND 
+        t.fecha <= $fecha_fin;
+END; //
+
+# 14. Ventas por operador
+CREATE PROCEDURE VentasPorOperador(IN $operador VARCHAR(50), IN $fecha_inicio DATE, IN $fecha_fin DATE)
+BEGIN
+    SELECT 
+        e.nombre, e.apellido_paterno, e.apellido_materno,
+        SUM(t.total) AS 'Total de ventas'
+    FROM 
+        empleado e
+    INNER JOIN 
+        ticket t ON e.numero_empleado = t.operador
+    WHERE 
+        e.nombre LIKE CONCAT('%', $operador, '%')
+    AND 
+        t.fecha >= $fecha_inicio
+    AND 
+        t.fecha <= $fecha_fin;
+END; //
+
+15. Ventas por fecha
+CREATE PROCEDURE VentasPorFecha(IN $fecha_inicio DATE, IN $fecha_fin DATE)
+BEGIN
+    SELECT 
+        t.fecha,
+        p.descripcion AS 'Tipo de servicio',
+        SUM(t.total) AS 'Total de ventas'
+    FROM 
+        ticket t
+    INNER JOIN 
+        paquete p ON t.paquete = p.id_paquete
+    WHERE 
+        t.fecha >= $fecha_inicio
+    AND 
+        t.fecha <= $fecha_fin
+    GROUP BY 
+        t.fecha, p.descripcion;
+END; //
+
+# 16. Reporte de servicios proporcionados por empleado
+CREATE PROCEDURE ReporteServiciosEmpleado(IN $empleado VARCHAR(50))
+BEGIN
+    SELECT 
+        c.nombre, c.apellido_paterno, c.apellido_materno,
+        p.descripcion AS 'Tipo de servicio',
+        t.fecha
+    FROM 
+        cliente c
+    INNER JOIN 
+        ticket t ON c.curp = t.cliente
+    INNER JOIN 
+        paquete p ON t.paquete = p.id_paquete
+    INNER JOIN 
+        empleado e ON t.operador = e.numero_empleado
+    WHERE 
+        e.nombre LIKE CONCAT('%', $empleado, '%')
+    ORDER BY 
+        c.nombre, t.fecha;
+END; //
+
+CREATE PROCEDURE sp_AgregarEstado()
+BEGIN
+    INSERT INTO Estado (estado) VALUES ('Aguascalientes');
+    INSERT INTO Estado (estado) VALUES ('Baja California');
+    INSERT INTO Estado (estado) VALUES ('Baja California Sur');
+    INSERT INTO Estado (estado) VALUES ('Campeche');
+    INSERT INTO Estado (estado) VALUES ('Chiapas');
+END; //
+
+CREATE PROCEDURE sp_ActualizarEstado(
+    IN $id_estado INT,
+    IN $estado VARCHAR(50)
 )
 BEGIN
-    SELECT cliente.nombre, cliente.apellido_paterno, cliente.apellido_materno, membresia.membresia,
-    paquete.descripcion AS 'Tipo de servicio', ticket.fecha
-    FROM cliente
-    INNER JOIN membresia ON cliente.id_membresia = membresia.id_membresia
-    INNER JOIN ticket ON cliente.curp = ticket.cliente
-    INNER JOIN paquete ON ticket.paquete = paquete.id_paquete
-    WHERE cliente.nombre LIKE CONCAT('%', $nombre, '%')
-    AND ticket.fecha >= DATE_SUB(CURDATE(), INTERVAL 10 DAY);
+    UPDATE estado
+    SET estado = $estado
+    WHERE id_estado = $id_estado;
 END; //
 
-CREATE PROCEDURE BuscarPorNumero(
-	IN $numero INT
+CREATE PROCEDURE sp_EliminarEstado(
+    IN $id_estado INT
 )
 BEGIN
-    SELECT empleado.nempleado, empleado.nombre, empleado.apellido_paterno, empleado.apellido_materno, sucursal.nombre AS Sucursal,
-    SUM(ticket.total) AS Total, AVG(ticket.total) AS Promedio
-    FROM empleado
-    INNER JOIN sucursal ON empleado.id_sucursal = sucursal.id_sucursal
-    INNER JOIN ticket ON empleado.nempleado = ticket.operador
-    WHERE empleado.nempleado = $numero
-    AND ticket.fecha >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
-    GROUP BY empleado.nempleado;
+    DELETE FROM estado
+    WHERE id_estado = $id_estado;
 END; //
 
-CREATE PROCEDURE OperadorDelMes()
+CREATE PROCEDURE sp_AgregarDireccion()
 BEGIN
-    SELECT empleado.nempleado, empleado.nombre, sucursal.nombre AS Sucursal, SUM(ticket.total) AS Total,
-    CASE
-        WHEN SUM(ticket.total) > 1000 THEN SUM(ticket.total) * 0.05
-        ELSE 0
-    END AS Bono,
-    CASE
-        WHEN SUM(ticket.total) > 1000 THEN 'Operador del mes'
-        ELSE ''
-    END AS Mensaje
-    FROM empleado
-    INNER JOIN sucursal ON empleado.id_sucursal = sucursal.id_sucursal
-    INNER JOIN ticket ON empleado.nempleado = ticket.operador
-    GROUP BY empleado.nempleado;
+    INSERT INTO Direccion (IdEstado, CodigoPostal, Calle, NumeroExterior, NumeroInterior)
+    VALUES (1, 20000, 'Avenida Independencia', 123, 1);
+    INSERT INTO Direccion (IdEstado, CodigoPostal, Calle, NumeroExterior, NumeroInterior)
+    VALUES (2, 21000, 'Calle 20 de Noviembre', 456, 2);
+    INSERT INTO Direccion (IdEstado, CodigoPostal, Calle, NumeroExterior, NumeroInterior)
+    VALUES (3, 23000, 'Avenida Constituyentes', 789, 3);
+    INSERT INTO Direccion (IdEstado, CodigoPostal, Calle, NumeroExterior, NumeroInterior)
+    VALUES (4, 24000, 'Calle 16 de Septiembre', 901, 4);
+    INSERT INTO Direccion (IdEstado, CodigoPostal, Calle, NumeroExterior, NumeroInterior)
+    VALUES (5, 25000, 'Avenida Juárez', 111, 5);
 END; //
 
-CREATE PROCEDURE ReporteServiciosCliente(
-	IN $nombre VARCHAR(50)
+CREATE PROCEDURE sp_ActualizarDireccion(
+    IN $id_direccion INT,
+    IN $id_estado INT,
+    IN $codigo_postal INT,
+    IN $calle VARCHAR(50),
+    IN $numero_exterior INT,
+    IN $numero_interior INT
 )
 BEGIN
-    SELECT cliente.nombre, cliente.apellido_paterno, cliente.apellido_materno, paquete.descripcion AS 'Tipo de servicio',
-    COUNT(*) AS 'Numero de servicios'
-    FROM ticket
-    INNER JOIN cliente ON ticket.cliente = cliente.curp
-    INNER JOIN paquete ON ticket.paquete = paquete.id_paquete
-    INNER JOIN empleado ON ticket.operador = empleado.nempleado
-    WHERE empleado.nombre LIKE CONCAT('%', $nombre, '%')
-    GROUP BY cliente.curp, paquete.descripcion;
+    UPDATE direccion
+    SET id_estado = $id_estado,
+        codigo_postal = $codigoPostal,
+        calle = $calle,
+        numero_exterior = $numero_exterior,
+        numero_interior = $numero_interior
+    WHERE id_direccion = $id_direccion;
 END; //
 
-CREATE PROCEDURE AgregarSucursal(
+CREATE PROCEDURE sp_EliminarDireccion(
+    IN $id_direccion INT
+)
+BEGIN
+    DELETE FROM direccion
+    WHERE id_direccion = $id_direccion;
+END; //
+
+CREATE PROCEDURE sp_AgregarTipoContacto()
+BEGIN
+    INSERT INTO TipoContacto (Tipo) VALUES ('Teléfono');
+    INSERT INTO TipoContacto (Tipo) VALUES ('Correo Electrónico');
+    INSERT INTO TipoContacto (Tipo) VALUES ('Dirección');
+    INSERT INTO TipoContacto (Tipo) VALUES ('Redes Sociales');
+    INSERT INTO TipoContacto (Tipo) VALUES ('Otros');
+END; //
+
+CREATE PROCEDURE sp_ActualizarTipoContacto(
+    IN $id_tipo_contacto INT,
+    IN $tipo VARCHAR(50)
+)
+BEGIN
+    UPDATE tipo_contacto
+    SET tipo = $tipo
+    WHERE id_tipo_contacto = $id_tipo_contacto;
+END; //
+
+CREATE PROCEDURE sp_EliminarTipoContacto(
+    IN $id_tipo_contacto INT
+)
+BEGIN
+    DELETE FROM tipo_contacto
+    WHERE id_tipo_contacto = $id_tipo_contacto;
+END; //
+
+CREATE PROCEDURE sp_AgregarPuesto()
+BEGIN
+    INSERT INTO Puesto (Puesto, Salario) VALUES ('Gerente', 50000.00);
+    INSERT INTO Puesto (Puesto, Salario) VALUES ('Supervisor', 30000.00);
+    INSERT INTO Puesto (Puesto, Salario) VALUES ('Empleado', 20000.00);
+    INSERT INTO Puesto (Puesto, Salario) VALUES ('Asistente', 15000.00);
+    INSERT INTO Puesto (Puesto, Salario) VALUES ('Practicante', 10000.00);
+END; //
+
+CREATE PROCEDURE sp_ActualizarPuesto(
+    IN $id_puesto INT,
+    IN $puesto VARCHAR(50),
+    IN $salario DECIMAL(10, 2)
+)
+BEGIN
+    UPDATE puesto
+    SET puesto = $puesto,
+        salario = $salario
+    WHERE id_puesto = $id_puesto;
+END; //
+
+CREATE PROCEDURE sp_EliminarPuesto(
+    IN $id_puesto INT
+)
+BEGIN
+    DELETE FROM puesto
+    WHERE id_puesto = $id_puesto;
+END; //
+
+CREATE PROCEDURE sp_AgregarHorario()
+BEGIN
+    INSERT INTO Horario (HoraEntrada, HoraSalida) VALUES ('08:00:00', '16:00:00');
+    INSERT INTO Horario (HoraEntrada, HoraSalida) VALUES ('09:00:00', '17:00:00');
+    INSERT INTO Horario (HoraEntrada, HoraSalida) VALUES ('10:00:00', '18:00:00');
+    INSERT INTO Horario (HoraEntrada, HoraSalida) VALUES ('11:00:00', '19:00:00');
+    INSERT INTO Horario (HoraEntrada, HoraSalida) VALUES ('12:00:00', '20:00:00');
+END; //
+
+CREATE PROCEDURE sp_ActualizarHorario(
+    IN $id_horario INT,
+    IN $hora_entrada TIME,
+    IN $hora_salida TIME
+)
+BEGIN
+    UPDATE horario
+    SET hora_entrada = $hora_entrada,
+        hora_salida = $hora_salida
+    WHERE id_horario = $id_horario;
+END; //
+
+CREATE PROCEDURE sp_EliminarHorario(
+    IN $id_horario INT
+)
+BEGIN
+    DELETE FROM horario
+    WHERE id_horario = $id_horario;
+END; //
+
+CREATE PROCEDURE sp_AgregarSucursal()
+BEGIN
+    INSERT INTO Sucursal (IdDireccion, Nombre) VALUES (1, 'Sucursal Centro');
+    INSERT INTO Sucursal (IdDireccion, Nombre) VALUES (2, 'Sucursal Norte');
+    INSERT INTO Sucursal (IdDireccion, Nombre) VALUES (3, 'Sucursal Sur');
+    INSERT INTO Sucursal (IdDireccion, Nombre) VALUES (4, 'Sucursal Este');
+    INSERT INTO Sucursal (IdDireccion, Nombre) VALUES (5, 'Sucursal Oeste');
+END; //
+
+CREATE PROCEDURE sp_ActualizarSucursal(
+    IN $id_sucursal INT,
+    IN $id_direccion INT,
+    IN $nombre VARCHAR(50)
+)
+BEGIN
+    UPDATE sucursal
+    SET id_direccion = $id_direccion,
+        nombre = $nombre
+    WHERE id_sucursal = $id_sucursal;
+END; //
+
+CREATE PROCEDURE sp_EliminarSucursal(
+    IN $id_sucursal INT
+)
+BEGIN
+    DELETE FROM sucursal
+    WHERE id_sucursal = $id_sucursal;
+END; //
+
+CREATE PROCEDURE sp_AgregarCronograma()
+BEGIN
+    INSERT INTO Cronograma (NumeroEmpleado, IdHorario) VALUES (1, 1);
+    INSERT INTO Cronograma (NumeroEmpleado, IdHorario) VALUES (2, 2);
+    INSERT INTO Cronograma (NumeroEmpleado, IdHorario) VALUES (3, 3);
+    INSERT INTO Cronograma (NumeroEmpleado, IdHorario) VALUES (4, 4);
+    INSERT INTO Cronograma (NumeroEmpleado, IdHorario) VALUES (5, 5);
+END; //
+
+CREATE PROCEDURE sp_ActualizarCronograma(
+    IN $id_cronograma INT,
+    IN $numero_empleado INT,
+    IN $id_horario INT
+)
+BEGIN
+    UPDATE cronograma
+    SET numero_empleado = $numero_empleado,
+        id_horario = $id_horario
+    WHERE id_cronograma = $id_cronograma;
+END; //
+
+CREATE PROCEDURE sp_EliminarCronograma(
+    IN $id_cronograma INT
+)
+BEGIN
+    DELETE FROM cronograma
+    WHERE id_cronograma = $id_cronograma;
+END; //
+
+CREATE PROCEDURE sp_AgregarMembresia()
+BEGIN
+    INSERT INTO Membresia (Membresia, Condicion) VALUES ('Membresia Básica', 'Pago mensual');
+    INSERT INTO Membresia (Membresia, Condicion) VALUES ('Membresia Premium', 'Pago anual');
+    INSERT INTO Membresia (Membresia, Condicion) VALUES ('Membresia Elite', 'Pago trimestral');
+    INSERT INTO Membresia (Membresia, Condicion) VALUES ('Membresia Estándar', 'Pago semestral');
+    INSERT INTO Membresia (Membresia, Condicion) VALUES ('Membresia Gratis', 'Registro gratuito');
+END; //
+
+CREATE PROCEDURE sp_ActualizarMembresia(
+    IN $id_membresia INT,
+    IN $membresia VARCHAR(50),
+    IN $condicion VARCHAR(50)
+)
+BEGIN
+    UPDATE membresia
+    SET membresia = $membresia,
+        condicion = $condicion
+    WHERE id_membresia = $id_membresia;
+END; //
+
+CREATE PROCEDURE sp_EliminarMembresia(
+    IN $id_membresia INT
+)
+BEGIN
+    DELETE FROM membresia
+    WHERE id_membresia = $id_membresia;
+END; //
+
+CREATE PROCEDURE sp_AgregarPromocion()
+BEGIN
+    INSERT INTO Promocion (Descripcion, Condicion) VALUES ('Descuento del 10%', 'Compra mínima de $1000');
+    INSERT INTO Promocion (Descripcion, Condicion) VALUES ('Descuento del 20%', 'Compra mínima de $2000');
+    INSERT INTO Promocion (Descripcion, Condicion) VALUES ('Descuento del 30%', 'Compra mínima de $3000');
+    INSERT INTO Promocion (Descripcion, Condicion) VALUES ('Descuento del 40%', 'Compra mínima de $4000');
+    INSERT INTO Promocion (Descripcion, Condicion) VALUES ('Descuento del 50%', 'Compra mínima de $5000');
+END; //
+
+CREATE PROCEDURE sp_ActualizarPromocion(
+    IN $id_promocion INT,
+    IN $descripcion VARCHAR(50),
+    IN $condicion VARCHAR(50)
+)
+BEGIN
+    UPDATE promocion
+    SET descripcion = $descripcion,
+        condicion = $condicion
+    WHERE id_promocion = $id_promocion;
+END; //
+
+CREATE PROCEDURE sp_EliminarPromocion(
+    IN $id_promocion INT
+)
+BEGIN
+    DELETE FROM promocion
+    WHERE id_promocion = $id_promocion;
+END; //
+
+CREATE PROCEDURE sp_AgregarCliente()
+BEGIN
+    INSERT INTO Cliente (CURP, IdMembresia, IdDireccion, Nombre, ApellidoPaterno, ApellidoMaterno, FechaRegistro)
+    VALUES ('RFC123456789', 1, 1, 'Juan', 'Pérez', 'González', '2022-01-01');
+    INSERT INTO Cliente (CURP, IdMembresia, IdDireccion, Nombre, ApellidoPaterno, ApellidoMaterno, FechaRegistro)
+    VALUES ('RFC987654321', 2, 2, 'María', 'López', 'Hernández', '2022-01-02');
+    INSERT INTO Cliente (CURP, IdMembresia, IdDireccion, Nombre, ApellidoPaterno, ApellidoMaterno, FechaRegistro)
+    VALUES ('RFC111111111', 3, 3, 'Carlos', 'García', 'Martínez', '2022-01-03');
+    INSERT INTO Cliente (CURP, IdMembresia, IdDireccion, Nombre, ApellidoPaterno, ApellidoMaterno, FechaRegistro)
+    VALUES ('RFC222222222', 4, 4, 'Ana', 'Rodríguez', 'Sánchez', '2022-01-04');
+    INSERT INTO Cliente (CURP, IdMembresia, IdDireccion, Nombre, ApellidoPaterno, ApellidoMaterno, FechaRegistro)
+    VALUES ('RFC333333333', 5, 5, 'Pedro', 'Díaz', 'Fernández', '2022-01-05');
+END; //
+
+CREATE PROCEDURE sp_ActualizarCliente(
+    IN $curp VARCHAR(18),
+    IN $id_membresia INT,
+    IN $id_direccion INT,
     IN $nombre VARCHAR(50),
-    IN $direccion VARCHAR(100),
-    IN $telefono VARCHAR(15)
+    IN $apellido_paterno VARCHAR(50),
+    IN $apellido_materno VARCHAR(50),
+    IN $fecha_registro DATE
 )
 BEGIN
-    DECLARE $existe INT DEFAULT 0;
-    SELECT COUNT(*) INTO $existe
-    FROM sucursal
-    WHERE nombre = $nombre;
-    IF $existe > 0 THEN
-        SELECT 'La sucursal ya existe.';
-    ELSE
-        INSERT INTO sucursal (nombre, id_direccion, telefono)
-        VALUES ($nombre, $direccion, $telefono);
-        SELECT 'Sucursal agregada exitosamente.';
-    END IF;
+    UPDATE cliente
+    SET id_membresia = $id_membresia,
+        id_direccion = $id_direccion,
+        nombre = $nombre,
+        apellido_paterno = $apellido_paterno,
+        apellido_materno = $apellido_materno,
+        fecha_registro = $fecha_registro
+    WHERE curp = $curp;
 END; //
 
-CREATE PROCEDURE AgregarEmpleado(
-    IN $empleado INT,
-    IN $sucursal INT,
-    IN $puesto INT,
-    IN $horario INT,
+CREATE PROCEDURE sp_EliminarCliente(
+    IN $curp VARCHAR(18)
+)
+BEGIN
+    DELETE FROM cliente
+    WHERE curp = $curp;
+END; //
+
+CREATE PROCEDURE sp_AgregarEmpleado()
+BEGIN
+    INSERT INTO Empleado (IdSucursal, IdPuesto, Nombre, ApellidoPaterno, ApellidoMaterno)
+    VALUES (1, 1, 'Juan', 'Pérez', 'González');
+    INSERT INTO Empleado (IdSucursal, IdPuesto, Nombre, ApellidoPaterno, ApellidoMaterno)
+    VALUES (2, 2, 'María', 'López', 'Hernández');
+    INSERT INTO Empleado (IdSucursal, IdPuesto, Nombre, ApellidoPaterno, ApellidoMaterno)
+    VALUES (3, 3, 'Carlos', 'García', 'Martínez');
+    INSERT INTO Empleado (IdSucursal, IdPuesto, Nombre, ApellidoPaterno, ApellidoMaterno)
+    VALUES (4, 4, 'Ana', 'Rodríguez', 'Sánchez');
+    INSERT INTO Empleado (IdSucursal, IdPuesto, Nombre, ApellidoPaterno, ApellidoMaterno)
+    VALUES (5, 5, 'Pedro', 'Díaz', 'Fernández');
+END; //
+
+CREATE PROCEDURE sp_ActualizarEmpleado(
+    IN $numero_empleado INT,
+    IN $id_sucursal INT,
+    IN $id_puesto INT,
     IN $nombre VARCHAR(50),
     IN $apellido_paterno VARCHAR(50),
     IN $apellido_materno VARCHAR(50)
 )
 BEGIN
-    DECLARE $existe INT DEFAULT 0;
-    SELECT COUNT(*) INTO $existe
-    FROM empleado
-    WHERE numero_empleado = $empleado;
-    IF $existe > 0 THEN
-        SELECT 'El empleado ya existe.';
-    ELSE
-        START TRANSACTION;
-        INSERT INTO empleado (numero_empleado, sucursal, puesto, nombre, apellido_paterno, apellido_materno)
-        VALUES ($empleado, $sucursal, $puesto, $nombre, $apellido_paterno, $apellido_materno);
-        INSERT INTO cronograma (numero_empleado, horario)
-        VALUES ($empleado, $horario);
-        COMMIT;
-        SELECT 'Empleado agregado exitosamente.';
-    END IF;
+    UPDATE empleado
+    SET id_sucursal = $id_sucursal,
+        id_puesto = $id_puesto,
+        nombre = $nombre,
+        apellido_paterno = $apellido_paterno,
+        apellido_materno = $apellido_materno
+    WHERE numero_empleado = $numero_empleado;
 END; //
 
-CREATE PROCEDURE AgregarCliente(
-    IN $curp CHAR(18),
-    IN $membresia INT,
-    IN $direccion INT,
-    IN $nombre VARCHAR(50),
-    IN $apellido_paterno VARCHAR(50),
-    IN $apellido_materno VARCHAR(50),
+CREATE PROCEDURE sp_EliminarEmpleado(
+    IN $numero_empleado INT
+)
+BEGIN
+    DELETE FROM empleado
+    WHERE numero_empleado = $numero_empleado;
+END; //
+
+CREATE PROCEDURE sp_AgregarContacto()
+BEGIN
+    INSERT INTO contacto (id_cliente, id_tipo_contacto, valor) 
+    VALUES (1, 1, '555-1234');
+    INSERT INTO contacto (id_cliente, id_tipo_contacto, valor) 
+    VALUES (1, 2, 'juan.angel@example.com');
+    INSERT INTO contacto (id_cliente, id_tipo_contacto, valor) 
+    VALUES (2, 1, '555-5678');
+    INSERT INTO contacto (id_cliente, id_tipo_contacto, valor) 
+    VALUES (2, 3, 'Calle 123, Col. Centro');
+    INSERT INTO contacto (id_cliente, id_tipo_contacto, valor) 
+    VALUES (3, 4, '@juanitoangelito');
+END; //
+
+CREATE PROCEDURE sp_ActualizarContacto(
+    IN $id_contacto INT,
+    IN $id_cliente INT,
+    IN $id_tipo_contacto INT,
+    IN $valor VARCHAR(50)
+)
+BEGIN
+    UPDATE contacto
+    SET id_cliente = $id_cliente,
+        id_tipo_contacto = $id_tipo_contacto,
+        valor = $valor
+    WHERE id_contacto = $id_contacto;
+END; //
+
+CREATE PROCEDURE sp_EliminarContacto(
+    IN $id_contacto INT
+)
+BEGIN
+    DELETE FROM contacto
+    WHERE id_contacto = $id_contacto;
+END; //
+
+CREATE PROCEDURE sp_AgregarTiposPago()
+BEGIN
+    INSERT INTO Tipos_pago (Tipo_pago) VALUES ('Efectivo');
+    INSERT INTO Tipos_pago (Tipo_pago) VALUES ('Tarjeta de crédito');
+    INSERT INTO Tipos_pago (Tipo_pago) VALUES ('Tarjeta de débito');
+    INSERT INTO Tipos_pago (Tipo_pago) VALUES ('PayPal');
+    INSERT INTO Tipos_pago (Tipo_pago) VALUES ('Transferencia bancaria');
+END; //
+
+CREATE PROCEDURE sp_ActualizarTiposPago(
+    IN $id_tipo_pago INT,
+    IN $tipo_pago VARCHAR(50)
+)
+BEGIN
+    UPDATE tipos_pago
+    SET tipo_pago = $tipo_pago
+    WHERE id_tipo_pago = $id_tipo_pago;
+END; //
+
+CREATE PROCEDURE sp_EliminarTiposPago(
+    IN $id_tipo_pago INT
+)
+BEGIN
+    DELETE FROM tipos_pago
+    WHERE id_tipo_pago = $id_tipo_pago;
+END; //
+
+CREATE PROCEDURE sp_AgregarPaquete()
+BEGIN
+    INSERT INTO Paquete (Descripcion, Precio) VALUES ('Paquete básico', 100.00);
+    INSERT INTO Paquete (Descripcion, Precio) VALUES ('Paquete premium', 200.00);
+    INSERT INTO Paquete (Descripcion, Precio) VALUES ('Paquete deluxe', 300.00);
+    INSERT INTO Paquete (Descripcion, Precio) VALUES ('Paquete económico', 50.00);
+    INSERT INTO Paquete (Descripcion, Precio) VALUES ('Paquete empresarial', 500.00);
+END; //
+
+CREATE PROCEDURE sp_ActualizarPaquete(
+    IN $id_paquete INT,
+    IN $descripcion VARCHAR(50),
+    IN $precio DECIMAL(10, 2)
+)
+BEGIN
+    UPDATE paquete
+    SET descripcion = $descripcion,
+        precio = $precio
+    WHERE id_paquete = $id_paquete;
+END; //
+
+CREATE PROCEDURE sp_EliminarPaquete(
+    IN $id_paquete INT
+)
+BEGIN
+    DELETE FROM paquete
+    WHERE id_paquete = $id_paquete;
+END; //
+
+CREATE PROCEDURE sp_AgregarCoche()
+BEGIN
+    INSERT INTO Coche (Matricula, Marca, Modelo) VALUES ('ABC123', 'Toyota', 'Corolla');
+    INSERT INTO Coche (Matricula, Marca, Modelo) VALUES ('DEF456', 'Honda', 'Civic');
+    INSERT INTO Coche (Matricula, Marca, Modelo) VALUES ('GHI789', 'Ford', 'Focus');
+    INSERT INTO Coche (Matricula, Marca, Modelo) VALUES ('JKL012', 'Nissan', 'Sentra');
+    INSERT INTO Coche (Matricula, Marca, Modelo) VALUES ('MNO345', 'Volkswagen', 'Golf');
+END; //
+
+CREATE PROCEDURE sp_ActualizarCoche(
+    IN $matricula VARCHAR(10),
+    IN $marca VARCHAR(50),
+    IN $modelo VARCHAR(50)
+)
+BEGIN
+    UPDATE coche
+    SET marca = $marca,
+        modelo = $modelo
+    WHERE matricula = $matricula;
+END; //
+
+CREATE PROCEDURE sp_EliminarCoche(
+    IN $matricula VARCHAR(10)
+)
+BEGIN
+    DELETE FROM coche
+    WHERE matricula = $matricula;
+END; //
+
+CREATE PROCEDURE sp_EliminarCoche(
+    IN $matricula VARCHAR(10)
+)
+BEGIN
+    DELETE FROM coche
+    WHERE matricula = $matricula;
+END; //
+
+CREATE PROCEDURE sp_AgregarTicket()
+BEGIN
+    INSERT INTO Ticket (Fecha, Hora, Total) VALUES ('2022-01-01', '10:00:00', 100.00);
+    INSERT INTO Ticket (Fecha, Hora, Total) VALUES ('2022-01-02', '11:00:00', 200.00);
+    INSERT INTO Ticket (Fecha, Hora, Total) VALUES ('2022-01-03', '12:00:00', 300.00);
+    INSERT INTO Ticket (Fecha, Hora, Total) VALUES ('2022-01-04', '13:00:00', 400.00);
+    INSERT INTO Ticket (Fecha, Hora, Total) VALUES ('2022-01-05', '14:00:00', 500.00);
+END; //
+
+CREATE PROCEDURE sp_ActualizarTicket(
+    IN $id_ticket INT,
     IN $fecha DATE,
-    IN $placa CHAR(8),
-    IN $modelo VARCHAR(50),
-    IN $ano INT,
-    IN $color VARCHAR(25),
-    IN $tipo_contacto INT,
-    IN $contacto VARCHAR(76)
+    IN $hora TIME,
+    IN $total DECIMAL(10, 2)
 )
 BEGIN
-    DECLARE $cliente INT DEFAULT 0;
-    DECLARE $coche INT DEFAULT 0;
-    
-    SELECT COUNT(*) INTO $cliente
-    FROM cliente
-    WHERE curp = $curp;
-    
-    SELECT COUNT(*) INTO $coche
-    FROM coche
-    WHERE placa = $placa;
-    
-    IF $cliente > 0 THEN
-        SELECT 'El cliente ya existe.';
-    ELSEIF $coche > 0 THEN
-        SELECT 'El coche con esa placa ya existe.';
-    ELSE
-        START TRANSACTION;
-        INSERT INTO cliente (curp, id_membresia, id_direccion, nombre, apellido_paterno, apellido_materno, fecha_registro)
-        VALUES ($curp, $membresia, $direccion, $nombre, $apellido_paterno, $apellido_materno, $fecha);
-        INSERT INTO coche (placa, curp, modelo, año, color)
-        VALUES ($placa, $curp, $modelo, $ano, $color);
-        INSERT INTO contacto (curp, id_tipo_contacto, contacto)
-        VALUES ($curp, $tipo_contacto, $contacto);  
-        COMMIT;
-        SELECT 'Cliente agregado exitosamente.';
-    END IF;
+    UPDATE ticket
+    SET fecha = $fecha,
+        hora = $hora,
+        total = $total
+    WHERE id_ticket = $id_ticket;
 END; //
 
-CREATE PROCEDURE AgregarPromocionSucursal(
-    IN $promocion INT,
-    IN $sucursal INT,
-    IN $fecha_inicio DATE,
-    IN $fecha_fin DATE
+CREATE PROCEDURE sp_EliminarTicket(
+    IN $id_ticket INT
 )
 BEGIN
-    DECLARE $existe INT DEFAULT 0;
-    SELECT COUNT(*) INTO $existe
-    FROM promocion_sucursal
-    WHERE id_promocion = $promocion AND id_sucursal = $sucursal;
-    IF $existe > 0 THEN
-        SELECT 'La promoción ya existe en la sucursal.';
-    ELSE
-        INSERT INTO promocion_sucursal (id_promocion, id_sucursal, fecha_inicio, fecha_fin)
-        VALUES ($promocion, $sucursal, $fecha_inicio, $fecha_fin);
-        SELECT 'Promoción agregada exitosamente a la sucursal.';
-    END IF;
+    DELETE FROM ticket
+    WHERE id_ticket = $id_ticket;
 END; //
 
-CREATE PROCEDURE AgregarHorario(
-    IN $hora_entrada TIME,
-    IN $hora_salida TIME
+CREATE PROCEDURE sp_AgregarCompra()
+BEGIN
+    INSERT INTO Compra (Fecha, Total) VALUES ('2022-01-01', 100.00);
+    INSERT INTO Compra (Fecha, Total) VALUES ('2022-01-02', 200.00);
+    INSERT INTO Compra (Fecha, Total) VALUES ('2022-01-03', 300.00);
+    INSERT INTO Compra (Fecha, Total) VALUES ('2022-01-04', 400.00);
+    INSERT INTO Compra (Fecha, Total) VALUES ('2022-01-05', 500.00);
+END; //
+
+CREATE PROCEDURE sp_ActualizarCompra(
+    IN $id_compra INT,
+    IN $fecha DATE,
+    IN $total DECIMAL(10, 2)
 )
 BEGIN
-    INSERT INTO horario (hora_entrada, hora_salida)
-    VALUES ($hora_entrada, $hora_salida);
-    SELECT 'Horario agregado exitosamente.';
+    UPDATE compra
+    SET fecha = $fecha,
+        total = $total
+    WHERE id_compra = $id_compra;
 END; //
 
-CREATE PROCEDURE AgregarContacto(
-    IN $curp CHAR(18),
-    IN $tipo_contacto INT,
-    IN $contacto VARCHAR(76)
+CREATE PROCEDURE sp_EliminarCompra(
+    IN $id_compra INT
 )
 BEGIN
-    INSERT INTO contacto (curp, id_tipo_contacto, contacto)
-    VALUES ($curp, $tipo_contacto, $contacto);
-    SELECT 'Contacto agregado exitosamente.';
+    DELETE FROM compra
+    WHERE id_compra = $id_compra;
 END; //
 
-CREATE PROCEDURE AgregarCoche(
-    IN $placa CHAR(8),
-    IN $curp CHAR(18),
-    IN $modelo VARCHAR(50),
-    IN $ano INT,
-    IN $color VARCHAR(25)
+CREATE PROCEDURE sp_AgregarPromocionSucursal()
+BEGIN
+    INSERT INTO Promocion_sucursal (Descripcion, Condicion) VALUES ('Descuento del 10%', 'Compra mínima de $1000');
+    INSERT INTO Promocion_sucursal (Descripcion, Condicion) VALUES ('Descuento del 20%', 'Compra mínima de $2000');
+    INSERT INTO Promocion_sucursal (Descripcion, Condicion) VALUES ('Descuento del 30%', 'Compra mínima de $3000');
+    INSERT INTO Promocion_sucursal (Descripcion, Condicion) VALUES ('Descuento del 40%', 'Compra mínima de $4000');
+    INSERT INTO Promocion_sucursal (Descripcion, Condicion) VALUES ('Descuento del 50%', 'Compra mínima de $5000');
+END; //
+
+CREATE PROCEDURE sp_ActualizarPromocionSucursal(
+    IN $id_promocion_sucursal INT,
+    IN $descripcion VARCHAR(50),
+    IN $condicion VARCHAR(50)
 )
 BEGIN
-    DECLARE $existe INT DEFAULT 0;
-    
-    SELECT COUNT(*) INTO $existe
-    FROM coche
-    WHERE placa = $placa;
-    
-    IF $existe > 0 THEN
-        SELECT 'El coche con esa placa ya existe.';
-    ELSE
-        INSERT INTO coche (placa, curp, modelo, año, color)
-        VALUES ($placa, $curp, $modelo, $ano, $color);
-        SELECT 'Coche agregado exitosamente.';
-    END IF;
+    UPDATE promocion_sucursal
+    SET descripcion = $descripcion,
+        condicion = $condicion
+    WHERE id_promocion_sucursal = $id_promocion_sucursal;
 END; //
 
-CREATE PROCEDURE AgregarPuesto(
-    IN $puesto VARCHAR(50),
-    IN $salario DECIMAL(6,2)
+CREATE PROCEDURE sp_EliminarPromocionSucursal(
+    IN $id_promocion_sucursal INT
 )
 BEGIN
-    INSERT INTO puesto (puesto, salario)
-    VALUES ($puesto, $salario);
-    SELECT 'Puesto agregado exitosamente.';
+    DELETE FROM promocion_sucursal
+    WHERE id_promocion_sucursal = $id_promocion_sucursal;
 END; //
 
-CREATE PROCEDURE AgregarDireccion(
-    IN $estado INT,
-    IN $codigo_postal INT,
-    IN $calle VARCHAR(250),
-    IN $numero_exterior INT,
-    IN $numero_interior INT
-)
-BEGIN
-    INSERT INTO direccion (id_estado, codigo_postal, calle, numero_exterior, numero_interior)
-    VALUES ($estado, $codigo_postal, $calle, $numero_exterior, IFNULL($numero_interior, NULL));
-    SELECT 'Dirección agregada exitosamente.';
-END; //
-
-CREATE PROCEDURE AgregarPaquete(
-    IN $promocion VARCHAR(50),
-    IN $descripcion VARCHAR(250),
-    IN $precio DECIMAL(6,2)
-)
-BEGIN
-    INSERT INTO paquete (promocion, descripcion, precio)
-    VALUES ($promocion, $descripcion, $precio);
-    SELECT 'Paquete agregado exitosamente.';
-END; //
-
-CREATE PROCEDURE GenerarTicket(
-    IN $cliente CHAR(18),
-    IN $operador INT,
-    IN $coche CHAR(8),
-    IN $sucursal INT,
-    IN $tipo_pago INT,
-    IN $paquete INT,
-    IN $promocion INT,
-    IN $comentario VARCHAR(250),
-    IN $subtotal DECIMAL(8,2),
-    IN $total DECIMAL(8,2)
-)
-BEGIN
-    DECLARE $existe INT DEFAULT 0;
-    DECLARE $ultimo INT;
-    SELECT COUNT(*) INTO $existe
-    FROM ticket
-    WHERE cliente = $cliente AND coche = $coche AND sucursal = $sucursal;
-    IF $existe > 0 THEN
-        SELECT 'El ticket ya existe.';
-    ELSE
-        START TRANSACTION;
-        INSERT INTO ticket (cliente, operador, coche, sucursal, tipo_pago, paquete, promocion, comentario, subtotal, total)
-        VALUES ($cliente, $operador, $coche, $sucursal, $tipo_pago, $paquete, IFNULL($promocion, NULL), IFNULL($comentario, ''), $subtotal, $total);
-        SET $ultimo = LAST_INSERT_ID();
-        COMMIT;
-        SELECT 'Ticket generado exitosamente.';
-        SELECT * FROM ticket WHERE id_ticket = $ultimo;
-    END IF;
-END; //
-
-CREATE PROCEDURE AgregarEstado(
-    IN nombre VARCHAR(20)
-)
-BEGIN
-    INSERT INTO estado (estado)
-    VALUES (nombre);
-    SELECT 'Esdtado agregado existosamente.';
-END; //
-
-CALL AgregarEstado('Ciudad de México');
-CALL AgregarEstado('Jalisco');
-CALL AgregarEstado('Puebla');
-CALL AgregarEstado('Oaxaca');
-CALL AgregarEstado('Quintana Roo');
-
-CALL AgregarDireccion(1, 72000, 'Calle de los Ángeles', 101, 201);
-CALL AgregarDireccion(2, 44100, 'Avenida Hidalgo', 102, NULL);
-CALL AgregarDireccion(3, 68000, 'Boulevard Benito Juárez', 103, NULL);
-CALL AgregarDireccion(4, 77500, 'Calle Quintana Roo', 104, 204);
-CALL AgregarDireccion(5, 11560, 'Paseo de la Reforma', 105, NULL);
-
-CALL AgregarSucursal('Sucursal Centro', 1, 1);
-CALL AgregarSucursal('Sucursal Norte', 2, 2);
-CALL AgregarSucursal('Sucursal Sur', 3, 3);
-CALL AgregarSucursal('Sucursal Este', 4, 4);
-CALL AgregarSucursal('Sucursal Oeste', 5, 5);
-
-CALL AgregarHorario(TIME('08:00:00'), TIME('18:00:00'));
-CALL AgregarHorario(TIME('09:00:00'), TIME('19:00:00'));
-
-CALL AgregarPuesto('Gerente General', 2500.00);
-CALL AgregarPuesto('Asistente de Gerencia', 1500.00);
-CALL AgregarPuesto('Lavador de Autos', 800.00);
-CALL AgregarPuesto('Contador Financiero', 2000.00);
-CALL AgregarPuesto('Recepcionista de Servicio al Cliente', 1200.00);
-
-CALL AgregarEmpleado('CURP001', 'Juan Pérez', 'Gerente General', 1, '555-123-4567', 'jperez@autowash.com');
-CALL AgregarEmpleado('CURP002', 'María López', 'Asistente de Gerencia', 2, '555-234-5678', 'mlopez@autowash.com');
-CALL AgregarEmpleado('CURP003', 'Carlos García', 'Lavador de Autos', 3, '555-345-6789', 'cgarcia@autowash.com');
-CALL AgregarEmpleado('CURP004', 'Ana Martínez', 'Contador Financiero', 4, '555-456-7890', 'amartinez@autowash.com');
-CALL AgregarEmpleado('CURP005', 'Luis Rodríguez', 'Recepcionista de Servicio al Cliente', 5, '555-567-8901', 'lrodriguez@autowash.com');
-
-CALL AgregarPaquete('Lavado Básico', 'Incluye lavado exterior e interior básico.', 150.00);
-CALL AgregarPaquete('Lavado Completo', 'Incluye lavado exterior e interior completo con cera.', 250.00);
-CALL AgregarPaquete('Lavado Premium', 'Incluye lavado completo más pulido y encerado.', 350.00);
-CALL AgregarPaquete('Lavado y Desinfección', 'Incluye lavado completo más desinfección interior.', 300.00);
-CALL AgregarPaquete('Lavado Express', 'Lavado exterior rápido para clientes en movimiento.', 100.00);
-
-CALL AgregarMembresia('Membresía Bronce', 'Descuento del 10% en todos los servicios.', 500.00);
-CALL AgregarMembresia('Membresía Plata', 'Descuento del 15% en todos los servicios y un lavado gratis al mes.', 1000.00);
-CALL AgregarMembresia('Membresía Oro', 'Descuento del 20% en todos los servicios y dos lavados gratis al mes.', 1500.00);
-
-CALL AgregarPromocion('Promoción de Verano', '20% de descuento en lavado completo.', NOW(), DATE_ADD(NOW(), INTERVAL 3 MONTH));
-CALL AgregarPromocion('Promoción de Invierno', 'Lavado y desinfección con precio especial.', NOW(), DATE_ADD(NOW(), INTERVAL 3 MONTH));
-
-CALL AgregarCliente('CURP006','Laura Jiménez','laurajimenez@genial.com','555-678-9012');
-CALL AgregarCliente('CURP007','Oscar Hernández','oscarhernandez@yahoo1.com','555-789-0123');
-
-CALL AgregarCoche('MEX1234', 'CURP001', 'Toyota Corolla', 2021, 'Gris');
-CALL AgregarCoche('MEX5678', 'CURP002', 'Honda Civic', 2020, 'Negro');
-CALL AgregarCoche('MEX9101', 'CURP003', 'Ford Focus', 2019, 'Blanco');
-CALL AgregarCoche('MEX1121', 'CURP004', 'Nissan Sentra', 2018, 'Azul');
-CALL AgregarCoche('MEX3141', 'CURP005', 'Chevrolet Aveo', 2017, 'Rojo');
-
-CALL GenerarTicket('CURP001', 1, 'MEX1234', 1, 1, 1, NULL, 'Me gustó', 150.00, 180.00);
-CALL GenerarTicket('CURP002', 2, 'MEX5678', 2, 2, 2, NULL, 'Dejan bien sucio', 250.00, 300.00);
-CALL GenerarTicket('CURP003', 3, 'MEX9101', 3, 3, NULL, NULL,'Comentario esperando revision' ,350.00 ,420.00 );
-CALL GenerarTicket('CURP004' ,4 ,'MEX1121' ,4 ,4 ,NULL ,NULL ,'Los baños bien cerdos' ,300.00 ,360.00 );
-CALL GenerarTicket('CURP005' ,5 ,'MEX3141' ,5 ,5 ,NULL ,NULL ,'Hola miss iliana' ,100.00 ,120.00 );
+DELIMITER ;
+CALL sp_AgregarEstado();
+CALL sp_AgregarDireccion();
+CALL sp_AgregarTipoContacto();
+CALL sp_AgregarPuesto();
+CALL sp_AgregarHorario();
+CALL sp_AgregarSucursal();
+CALL sp_AgregarCronograma();
+CALL sp_AgregarMembresia();
+CALL sp_AgregarPromocion();
+CALL sp_AgregarCliente();
+CALL sp_AgregarEmpleado();
+CALL sp_AgregarContacto();
+CALL sp_AgregarTiposPago();
+CALL sp_AgregarPaquete();
+CALL sp_AgregarCoche();
+CALL sp_AgregarTicket();
+CALL sp_AgregarCompra();
+CALL sp_AgregarPromocionSucursal();
