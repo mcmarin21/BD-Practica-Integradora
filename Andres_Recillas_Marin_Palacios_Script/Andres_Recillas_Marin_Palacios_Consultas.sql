@@ -46,7 +46,8 @@ FROM ticket
 JOIN cliente ON ticket.cliente = cliente.curp
 JOIN empleado ON ticket.operador = empleado.numero_empleado
 JOIN sucursal ON ticket.sucursal = sucursal.id_sucursal
-JOIN paquete ON ticket.paquete = paquete.id_paquete;
+JOIN compra ON ticket.id_ticket = compra.id_ticket
+join paquete on compra.id_paquete = paquete.id_paquete;
 
 CREATE VIEW ClientesAtendidos AS
 SELECT 
@@ -58,7 +59,8 @@ SELECT
     sucursal.nombre AS sucursal,
     empleado.nombre AS operador
 FROM ticket
-JOIN paquete ON ticket.paquete = paquete.id_paquete
+JOIN compra ON ticket.id_ticket = compra.id_ticket
+JOIN paquete ON compra.id_paquete = paquete.id_paquete
 JOIN coche ON ticket.coche = coche.placa
 JOIN sucursal ON ticket.sucursal = sucursal.id_sucursal
 JOIN empleado ON ticket.operador = empleado.numero_empleado
@@ -70,7 +72,8 @@ SELECT
     ticket.comentario,
     paquete.descripcion AS 'tipo servicio'
 FROM ticket
-JOIN paquete ON ticket.paquete = paquete.id_paquete;
+JOIN compra ON compra.id_ticket = ticket.id_ticket
+JOIN paquete ON compra.id_paquete = paquete.id_paquete;
 
 CREATE VIEW OperacionesExcedentes AS
 SELECT 
@@ -81,3 +84,10 @@ FROM ticket
 JOIN tipos_pago ON ticket.tipo_pago = tipos_pago.id_tipos_pago
 GROUP BY semana_del_año, tipos_pago.tipo
 HAVING total_clientes_atendidos > 20;
+
+select * from ClientesPorSucursal;
+select * from OperacionesSemanales;
+select * from PromedioVentas;
+select * from PromocionesDiarias;
+select * from ClientesAtendidos;
+select * from ComentariosClientes;
