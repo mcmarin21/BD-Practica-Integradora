@@ -121,7 +121,7 @@ BEGIN
         t.fecha <= $fecha_fin;
 END; //
 
-15. Ventas por fecha
+# 15. Ventas por fecha
 CREATE PROCEDURE VentasPorFecha(IN $fecha_inicio DATE, IN $fecha_fin DATE)
 BEGIN
     SELECT 
@@ -163,11 +163,11 @@ END; //
 
 CREATE PROCEDURE sp_AgregarEstado()
 BEGIN
-    INSERT INTO Estado (estado) VALUES ('Aguascalientes');
-    INSERT INTO Estado (estado) VALUES ('Baja California');
-    INSERT INTO Estado (estado) VALUES ('Baja California Sur');
-    INSERT INTO Estado (estado) VALUES ('Campeche');
-    INSERT INTO Estado (estado) VALUES ('Chiapas');
+    INSERT INTO estado (estado) VALUES ('Aguascalientes');
+    INSERT INTO estado (estado) VALUES ('Baja California');
+    INSERT INTO estado (estado) VALUES ('Baja California Sur');
+    INSERT INTO estado (estado) VALUES ('Campeche');
+    INSERT INTO estado (estado) VALUES ('Chiapas');
 END; //
 
 CREATE PROCEDURE sp_ActualizarEstado(
@@ -190,15 +190,15 @@ END; //
 
 CREATE PROCEDURE sp_AgregarDireccion()
 BEGIN
-    INSERT INTO Direccion (IdEstado, CodigoPostal, Calle, NumeroExterior, NumeroInterior)
+    INSERT INTO Direccion (id_estado, codigo_postal, calle, numero_exterior, numero_interior)
     VALUES (1, 20000, 'Avenida Independencia', 123, 1);
-    INSERT INTO Direccion (IdEstado, CodigoPostal, Calle, NumeroExterior, NumeroInterior)
+    INSERT INTO Direccion (id_estado, codigo_postal, calle, numero_exterior, numero_interior)
     VALUES (2, 21000, 'Calle 20 de Noviembre', 456, 2);
-    INSERT INTO Direccion (IdEstado, CodigoPostal, Calle, NumeroExterior, NumeroInterior)
+    INSERT INTO Direccion (id_estado, codigo_postal, calle, numero_exterior, numero_interior)
     VALUES (3, 23000, 'Avenida Constituyentes', 789, 3);
-    INSERT INTO Direccion (IdEstado, CodigoPostal, Calle, NumeroExterior, NumeroInterior)
+    INSERT INTO Direccion (id_estado, codigo_postal, calle, numero_exterior, numero_interior)
     VALUES (4, 24000, 'Calle 16 de Septiembre', 901, 4);
-    INSERT INTO Direccion (IdEstado, CodigoPostal, Calle, NumeroExterior, NumeroInterior)
+    INSERT INTO Direccion (id_estado, codigo_postal, calle, numero_exterior, numero_interior)
     VALUES (5, 25000, 'Avenida Juárez', 111, 5);
 END; //
 
@@ -230,11 +230,11 @@ END; //
 
 CREATE PROCEDURE sp_AgregarTipoContacto()
 BEGIN
-    INSERT INTO TipoContacto (Tipo) VALUES ('Teléfono');
-    INSERT INTO TipoContacto (Tipo) VALUES ('Correo Electrónico');
-    INSERT INTO TipoContacto (Tipo) VALUES ('Dirección');
-    INSERT INTO TipoContacto (Tipo) VALUES ('Redes Sociales');
-    INSERT INTO TipoContacto (Tipo) VALUES ('Otros');
+    INSERT INTO tipo_contacto (Tipo) VALUES ('Teléfono');
+    INSERT INTO tipo_contacto (Tipo) VALUES ('Correo Electrónico');
+    INSERT INTO tipo_contacto (Tipo) VALUES ('Dirección');
+    INSERT INTO tipo_contacto (Tipo) VALUES ('Redes Sociales');
+    INSERT INTO tipo_contacto (Tipo) VALUES ('Otros');
 END; //
 
 CREATE PROCEDURE sp_ActualizarTipoContacto(
@@ -257,11 +257,11 @@ END; //
 
 CREATE PROCEDURE sp_AgregarPuesto()
 BEGIN
-    INSERT INTO Puesto (Puesto, Salario) VALUES ('Gerente', 50000.00);
-    INSERT INTO Puesto (Puesto, Salario) VALUES ('Supervisor', 30000.00);
-    INSERT INTO Puesto (Puesto, Salario) VALUES ('Empleado', 20000.00);
-    INSERT INTO Puesto (Puesto, Salario) VALUES ('Asistente', 15000.00);
-    INSERT INTO Puesto (Puesto, Salario) VALUES ('Practicante', 10000.00);
+    INSERT INTO puesto (puesto, salario) VALUES ('Gerente', 5000.00);
+    INSERT INTO puesto (puesto, salario) VALUES ('Supervisor', 300.00);
+    INSERT INTO puesto (puesto, salario) VALUES ('Empleado', 200.00);
+    INSERT INTO puesto (puesto, salario) VALUES ('Asistente', 1500.00);
+    INSERT INTO puesto (puesto, salario) VALUES ('Practicante', 100.00);
 END; //
 
 CREATE PROCEDURE sp_ActualizarPuesto(
@@ -286,11 +286,11 @@ END; //
 
 CREATE PROCEDURE sp_AgregarHorario()
 BEGIN
-    INSERT INTO Horario (HoraEntrada, HoraSalida) VALUES ('08:00:00', '16:00:00');
-    INSERT INTO Horario (HoraEntrada, HoraSalida) VALUES ('09:00:00', '17:00:00');
-    INSERT INTO Horario (HoraEntrada, HoraSalida) VALUES ('10:00:00', '18:00:00');
-    INSERT INTO Horario (HoraEntrada, HoraSalida) VALUES ('11:00:00', '19:00:00');
-    INSERT INTO Horario (HoraEntrada, HoraSalida) VALUES ('12:00:00', '20:00:00');
+    INSERT INTO horario (hora_entrada, hora_salida) VALUES ('08:00:00', '16:00:00');
+    INSERT INTO horario (hora_entrada, hora_salida) VALUES ('09:00:00', '17:00:00');
+    INSERT INTO horario (hora_entrada, hora_salida) VALUES ('10:00:00', '18:00:00');
+    INSERT INTO horario (hora_entrada, hora_salida) VALUES ('11:00:00', '19:00:00');
+    INSERT INTO horario (hora_entrada, hora_salida) VALUES ('12:00:00', '20:00:00');
 END; //
 
 CREATE PROCEDURE sp_ActualizarHorario(
@@ -315,11 +315,11 @@ END; //
 
 CREATE PROCEDURE sp_AgregarSucursal()
 BEGIN
-    INSERT INTO Sucursal (IdDireccion, Nombre) VALUES (1, 'Sucursal Centro');
-    INSERT INTO Sucursal (IdDireccion, Nombre) VALUES (2, 'Sucursal Norte');
-    INSERT INTO Sucursal (IdDireccion, Nombre) VALUES (3, 'Sucursal Sur');
-    INSERT INTO Sucursal (IdDireccion, Nombre) VALUES (4, 'Sucursal Este');
-    INSERT INTO Sucursal (IdDireccion, Nombre) VALUES (5, 'Sucursal Oeste');
+    INSERT INTO Sucursal (id_direccion, nombre) VALUES (1, 'Sucursal Centro');
+    INSERT INTO Sucursal (id_direccion, nombre) VALUES (2, 'Sucursal Norte');
+    INSERT INTO Sucursal (id_direccion, nombre) VALUES (3, 'Sucursal Sur');
+    INSERT INTO Sucursal (id_direccion, nombre) VALUES (4, 'Sucursal Este');
+    INSERT INTO Sucursal (id_direccion, nombre) VALUES (5, 'Sucursal Oeste');
 END; //
 
 CREATE PROCEDURE sp_ActualizarSucursal(
@@ -344,11 +344,11 @@ END; //
 
 CREATE PROCEDURE sp_AgregarCronograma()
 BEGIN
-    INSERT INTO Cronograma (NumeroEmpleado, IdHorario) VALUES (1, 1);
-    INSERT INTO Cronograma (NumeroEmpleado, IdHorario) VALUES (2, 2);
-    INSERT INTO Cronograma (NumeroEmpleado, IdHorario) VALUES (3, 3);
-    INSERT INTO Cronograma (NumeroEmpleado, IdHorario) VALUES (4, 4);
-    INSERT INTO Cronograma (NumeroEmpleado, IdHorario) VALUES (5, 5);
+    INSERT INTO Cronograma (numero_empleado, id_horario) VALUES (1, 1);
+    INSERT INTO Cronograma (numero_empleado, id_horario) VALUES (2, 2);
+    INSERT INTO Cronograma (numero_empleado, id_horario) VALUES (3, 3);
+    INSERT INTO Cronograma (numero_empleado, id_horario) VALUES (4, 4);
+    INSERT INTO Cronograma (numero_empleado, id_horario) VALUES (5, 5);
 END; //
 
 CREATE PROCEDURE sp_ActualizarCronograma(
@@ -373,11 +373,11 @@ END; //
 
 CREATE PROCEDURE sp_AgregarMembresia()
 BEGIN
-    INSERT INTO Membresia (Membresia, Condicion) VALUES ('Membresia Básica', 'Pago mensual');
-    INSERT INTO Membresia (Membresia, Condicion) VALUES ('Membresia Premium', 'Pago anual');
-    INSERT INTO Membresia (Membresia, Condicion) VALUES ('Membresia Elite', 'Pago trimestral');
-    INSERT INTO Membresia (Membresia, Condicion) VALUES ('Membresia Estándar', 'Pago semestral');
-    INSERT INTO Membresia (Membresia, Condicion) VALUES ('Membresia Gratis', 'Registro gratuito');
+    INSERT INTO membresia (membresia, condicion) VALUES ('Membresia Básica', 'Pago mensual');
+    INSERT INTO membresia (membresia, condicion) VALUES ('Membresia Premium', 'Pago anual');
+    INSERT INTO membresia (membresia, condicion) VALUES ('Membresia Elite', 'Pago trimestral');
+    INSERT INTO membresia (membresia, condicion) VALUES ('Membresia Estándar', 'Pago semestral');
+    INSERT INTO membresia (membresia, condicion) VALUES ('Membresia Gratis', 'Registro gratuito');
 END; //
 
 CREATE PROCEDURE sp_ActualizarMembresia(
@@ -402,11 +402,11 @@ END; //
 
 CREATE PROCEDURE sp_AgregarPromocion()
 BEGIN
-    INSERT INTO Promocion (Descripcion, Condicion) VALUES ('Descuento del 10%', 'Compra mínima de $1000');
-    INSERT INTO Promocion (Descripcion, Condicion) VALUES ('Descuento del 20%', 'Compra mínima de $2000');
-    INSERT INTO Promocion (Descripcion, Condicion) VALUES ('Descuento del 30%', 'Compra mínima de $3000');
-    INSERT INTO Promocion (Descripcion, Condicion) VALUES ('Descuento del 40%', 'Compra mínima de $4000');
-    INSERT INTO Promocion (Descripcion, Condicion) VALUES ('Descuento del 50%', 'Compra mínima de $5000');
+    INSERT INTO promocion (descricion, condicion) VALUES ('Descuento del 10%', 'Compra mínima de $1000');
+    INSERT INTO promocion (descricion, condicion) VALUES ('Descuento del 20%', 'Compra mínima de $2000');
+    INSERT INTO promocion (descricion, condicion) VALUES ('Descuento del 30%', 'Compra mínima de $3000');
+    INSERT INTO promocion (descricion, condicion) VALUES ('Descuento del 40%', 'Compra mínima de $4000');
+    INSERT INTO promocion (descricion, condicion) VALUES ('Descuento del 50%', 'Compra mínima de $5000');
 END; //
 
 CREATE PROCEDURE sp_ActualizarPromocion(
@@ -431,15 +431,15 @@ END; //
 
 CREATE PROCEDURE sp_AgregarCliente()
 BEGIN
-    INSERT INTO Cliente (CURP, IdMembresia, IdDireccion, Nombre, ApellidoPaterno, ApellidoMaterno, FechaRegistro)
+    INSERT INTO Cliente (CURP, id_membresia, id_direccion, nombre, apellido_paterno, apellido_materno, fecha_registro)
     VALUES ('RFC123456789', 1, 1, 'Juan', 'Pérez', 'González', '2022-01-01');
-    INSERT INTO Cliente (CURP, IdMembresia, IdDireccion, Nombre, ApellidoPaterno, ApellidoMaterno, FechaRegistro)
+    INSERT INTO Cliente (CURP, id_membresia, id_direccion, nombre, apellido_paterno, apellido_materno, fecha_registro)
     VALUES ('RFC987654321', 2, 2, 'María', 'López', 'Hernández', '2022-01-02');
-    INSERT INTO Cliente (CURP, IdMembresia, IdDireccion, Nombre, ApellidoPaterno, ApellidoMaterno, FechaRegistro)
+    INSERT INTO Cliente (CURP, id_membresia, id_direccion, nombre, apellido_paterno, apellido_materno, fecha_registro)
     VALUES ('RFC111111111', 3, 3, 'Carlos', 'García', 'Martínez', '2022-01-03');
-    INSERT INTO Cliente (CURP, IdMembresia, IdDireccion, Nombre, ApellidoPaterno, ApellidoMaterno, FechaRegistro)
+    INSERT INTO Cliente (CURP, id_membresia, id_direccion, nombre, apellido_paterno, apellido_materno, fecha_registro)
     VALUES ('RFC222222222', 4, 4, 'Ana', 'Rodríguez', 'Sánchez', '2022-01-04');
-    INSERT INTO Cliente (CURP, IdMembresia, IdDireccion, Nombre, ApellidoPaterno, ApellidoMaterno, FechaRegistro)
+    INSERT INTO Cliente (CURP, id_membresia, id_direccion, nombre, apellido_paterno, apellido_materno, fecha_registro)
     VALUES ('RFC333333333', 5, 5, 'Pedro', 'Díaz', 'Fernández', '2022-01-05');
 END; //
 
@@ -473,15 +473,15 @@ END; //
 
 CREATE PROCEDURE sp_AgregarEmpleado()
 BEGIN
-    INSERT INTO Empleado (IdSucursal, IdPuesto, Nombre, ApellidoPaterno, ApellidoMaterno)
+    INSERT INTO Empleado (id_sucursal, id_puesto, nombre, apellido_paterno, apellido_materno)
     VALUES (1, 1, 'Juan', 'Pérez', 'González');
-    INSERT INTO Empleado (IdSucursal, IdPuesto, Nombre, ApellidoPaterno, ApellidoMaterno)
+    INSERT INTO Empleado (id_sucursal, id_puesto, nombre, apellido_paterno, apellido_materno)
     VALUES (2, 2, 'María', 'López', 'Hernández');
-    INSERT INTO Empleado (IdSucursal, IdPuesto, Nombre, ApellidoPaterno, ApellidoMaterno)
+    INSERT INTO Empleado (id_sucursal, id_puesto, nombre, apellido_paterno, apellido_materno)
     VALUES (3, 3, 'Carlos', 'García', 'Martínez');
-    INSERT INTO Empleado (IdSucursal, IdPuesto, Nombre, ApellidoPaterno, ApellidoMaterno)
+    INSERT INTO Empleado (id_sucursal, id_puesto, nombre, apellido_paterno, apellido_materno)
     VALUES (4, 4, 'Ana', 'Rodríguez', 'Sánchez');
-    INSERT INTO Empleado (IdSucursal, IdPuesto, Nombre, ApellidoPaterno, ApellidoMaterno)
+    INSERT INTO Empleado (id_sucursal, id_puesto, nombre, apellido_paterno, apellido_materno)
     VALUES (5, 5, 'Pedro', 'Díaz', 'Fernández');
 END; //
 
@@ -513,15 +513,15 @@ END; //
 
 CREATE PROCEDURE sp_AgregarContacto()
 BEGIN
-    INSERT INTO contacto (id_cliente, id_tipo_contacto, valor) 
+    INSERT INTO contacto (id_cliente, id_tipo_contacto, tipo) 
     VALUES (1, 1, '555-1234');
-    INSERT INTO contacto (id_cliente, id_tipo_contacto, valor) 
+    INSERT INTO contacto (id_cliente, id_tipo_contacto, tipo) 
     VALUES (1, 2, 'juan.angel@example.com');
-    INSERT INTO contacto (id_cliente, id_tipo_contacto, valor) 
+    INSERT INTO contacto (id_cliente, id_tipo_contacto, tipo) 
     VALUES (2, 1, '555-5678');
-    INSERT INTO contacto (id_cliente, id_tipo_contacto, valor) 
+    INSERT INTO contacto (id_cliente, id_tipo_contacto, tipo) 
     VALUES (2, 3, 'Calle 123, Col. Centro');
-    INSERT INTO contacto (id_cliente, id_tipo_contacto, valor) 
+    INSERT INTO contacto (id_cliente, id_tipo_contacto, tipo) 
     VALUES (3, 4, '@juanitoangelito');
 END; //
 
@@ -549,11 +549,11 @@ END; //
 
 CREATE PROCEDURE sp_AgregarTiposPago()
 BEGIN
-    INSERT INTO Tipos_pago (Tipo_pago) VALUES ('Efectivo');
-    INSERT INTO Tipos_pago (Tipo_pago) VALUES ('Tarjeta de crédito');
-    INSERT INTO Tipos_pago (Tipo_pago) VALUES ('Tarjeta de débito');
-    INSERT INTO Tipos_pago (Tipo_pago) VALUES ('PayPal');
-    INSERT INTO Tipos_pago (Tipo_pago) VALUES ('Transferencia bancaria');
+    INSERT INTO tipos_pago (tipo) VALUES ('Efectivo');
+    INSERT INTO tipos_pago (tipo) VALUES ('Tarjeta de crédito');
+    INSERT INTO tipos_pago (tipo) VALUES ('Tarjeta de débito');
+    INSERT INTO tipos_pago (tipo) VALUES ('PayPal');
+    INSERT INTO tipos_pago (tipo) VALUES ('Transferencia bancaria');
 END; //
 
 CREATE PROCEDURE sp_ActualizarTiposPago(
@@ -576,11 +576,11 @@ END; //
 
 CREATE PROCEDURE sp_AgregarPaquete()
 BEGIN
-    INSERT INTO Paquete (Descripcion, Precio) VALUES ('Paquete básico', 100.00);
-    INSERT INTO Paquete (Descripcion, Precio) VALUES ('Paquete premium', 200.00);
-    INSERT INTO Paquete (Descripcion, Precio) VALUES ('Paquete deluxe', 300.00);
-    INSERT INTO Paquete (Descripcion, Precio) VALUES ('Paquete económico', 50.00);
-    INSERT INTO Paquete (Descripcion, Precio) VALUES ('Paquete empresarial', 500.00);
+    INSERT INTO paquete (descricion, precio) VALUES ('Paquete básico', 100.00);
+    INSERT INTO paquete (descricion, precio) VALUES ('Paquete premium', 200.00);
+    INSERT INTO paquete (descricion, precio) VALUES ('Paquete deluxe', 300.00);
+    INSERT INTO paquete (descricion, precio) VALUES ('Paquete económico', 50.00);
+    INSERT INTO paquete (descricion, precio) VALUES ('Paquete empresarial', 500.00);
 END; //
 
 CREATE PROCEDURE sp_ActualizarPaquete(
@@ -605,11 +605,11 @@ END; //
 
 CREATE PROCEDURE sp_AgregarCoche()
 BEGIN
-    INSERT INTO Coche (Matricula, Marca, Modelo) VALUES ('ABC123', 'Toyota', 'Corolla');
-    INSERT INTO Coche (Matricula, Marca, Modelo) VALUES ('DEF456', 'Honda', 'Civic');
-    INSERT INTO Coche (Matricula, Marca, Modelo) VALUES ('GHI789', 'Ford', 'Focus');
-    INSERT INTO Coche (Matricula, Marca, Modelo) VALUES ('JKL012', 'Nissan', 'Sentra');
-    INSERT INTO Coche (Matricula, Marca, Modelo) VALUES ('MNO345', 'Volkswagen', 'Golf');
+    INSERT INTO Coche (placa, modelo) VALUES ('ABC123', 'Corolla');
+    INSERT INTO Coche (placa, modelo) VALUES ('DEF456', 'Civic');
+    INSERT INTO Coche (placa, modelo) VALUES ('GHI789', 'Focus');
+    INSERT INTO Coche (placa, modelo) VALUES ('JKL012', 'Sentra');
+    INSERT INTO Coche (placa, modelo) VALUES ('MNO345', 'Golf');
 END; //
 
 CREATE PROCEDURE sp_ActualizarCoche(
@@ -632,21 +632,13 @@ BEGIN
     WHERE matricula = $matricula;
 END; //
 
-CREATE PROCEDURE sp_EliminarCoche(
-    IN $matricula VARCHAR(10)
-)
-BEGIN
-    DELETE FROM coche
-    WHERE matricula = $matricula;
-END; //
-
 CREATE PROCEDURE sp_AgregarTicket()
 BEGIN
-    INSERT INTO Ticket (Fecha, Hora, Total) VALUES ('2022-01-01', '10:00:00', 100.00);
-    INSERT INTO Ticket (Fecha, Hora, Total) VALUES ('2022-01-02', '11:00:00', 200.00);
-    INSERT INTO Ticket (Fecha, Hora, Total) VALUES ('2022-01-03', '12:00:00', 300.00);
-    INSERT INTO Ticket (Fecha, Hora, Total) VALUES ('2022-01-04', '13:00:00', 400.00);
-    INSERT INTO Ticket (Fecha, Hora, Total) VALUES ('2022-01-05', '14:00:00', 500.00);
+    INSERT INTO ticket (fecha, Hora, Total) VALUES ('2022-01-01', '10:00:00', 100.00);
+    INSERT INTO ticket (fecha, Hora, Total) VALUES ('2022-01-02', '11:00:00', 200.00);
+    INSERT INTO ticket (fecha, Hora, Total) VALUES ('2022-01-03', '12:00:00', 300.00);
+    INSERT INTO ticket (fecha, Hora, Total) VALUES ('2022-01-04', '13:00:00', 400.00);
+    INSERT INTO ticket (fecha, Hora, Total) VALUES ('2022-01-05', '14:00:00', 500.00);
 END; //
 
 CREATE PROCEDURE sp_ActualizarTicket(
@@ -673,11 +665,11 @@ END; //
 
 CREATE PROCEDURE sp_AgregarCompra()
 BEGIN
-    INSERT INTO Compra (Fecha, Total) VALUES ('2022-01-01', 100.00);
-    INSERT INTO Compra (Fecha, Total) VALUES ('2022-01-02', 200.00);
-    INSERT INTO Compra (Fecha, Total) VALUES ('2022-01-03', 300.00);
-    INSERT INTO Compra (Fecha, Total) VALUES ('2022-01-04', 400.00);
-    INSERT INTO Compra (Fecha, Total) VALUES ('2022-01-05', 500.00);
+    INSERT INTO Compra (fecha, Total) VALUES ('2022-01-01', 100.00);
+    INSERT INTO Compra (fecha, Total) VALUES ('2022-01-02', 200.00);
+    INSERT INTO Compra (fecha, Total) VALUES ('2022-01-03', 300.00);
+    INSERT INTO Compra (fecha, Total) VALUES ('2022-01-04', 400.00);
+    INSERT INTO Compra (fecha, Total) VALUES ('2022-01-05', 500.00);
 END; //
 
 CREATE PROCEDURE sp_ActualizarCompra(
@@ -702,11 +694,11 @@ END; //
 
 CREATE PROCEDURE sp_AgregarPromocionSucursal()
 BEGIN
-    INSERT INTO Promocion_sucursal (Descripcion, Condicion) VALUES ('Descuento del 10%', 'Compra mínima de $1000');
-    INSERT INTO Promocion_sucursal (Descripcion, Condicion) VALUES ('Descuento del 20%', 'Compra mínima de $2000');
-    INSERT INTO Promocion_sucursal (Descripcion, Condicion) VALUES ('Descuento del 30%', 'Compra mínima de $3000');
-    INSERT INTO Promocion_sucursal (Descripcion, Condicion) VALUES ('Descuento del 40%', 'Compra mínima de $4000');
-    INSERT INTO Promocion_sucursal (Descripcion, Condicion) VALUES ('Descuento del 50%', 'Compra mínima de $5000');
+    INSERT INTO Promocion_sucursal (descricion, condicion) VALUES ('Descuento del 10%', 'Compra mínima de $1000');
+    INSERT INTO Promocion_sucursal (descricion, condicion) VALUES ('Descuento del 20%', 'Compra mínima de $2000');
+    INSERT INTO Promocion_sucursal (descricion, condicion) VALUES ('Descuento del 30%', 'Compra mínima de $3000');
+    INSERT INTO Promocion_sucursal (descricion, condicion) VALUES ('Descuento del 40%', 'Compra mínima de $4000');
+    INSERT INTO Promocion_sucursal (descricion, condicion) VALUES ('Descuento del 50%', 'Compra mínima de $5000');
 END; //
 
 CREATE PROCEDURE sp_ActualizarPromocionSucursal(
