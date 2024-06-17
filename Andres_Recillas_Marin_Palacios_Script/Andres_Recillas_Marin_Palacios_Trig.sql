@@ -1,6 +1,6 @@
 USE Autolavado;
 
-CREATE TABLE VentasPorDia (
+CREATE TABLE VentasDiarias (
     fecha DATE NOT NULL,
     id_paquete INT NOT NULL,
     total_ventas DECIMAL(10,2) NOT NULL DEFAULT 0,
@@ -16,12 +16,12 @@ BEGIN
     SELECT SUM(subtotal) INTO total_venta
     FROM ticket
     WHERE fecha = NEW.fecha AND paquete = NEW.paquete;
-    IF EXISTS (SELECT * FROM VentasPorDia WHERE fecha = NEW.fecha AND id_paquete = NEW.paquete) THEN
-        UPDATE VentasPorDia
+    IF EXISTS (SELECT * FROM VentasDiarias WHERE fecha = NEW.fecha AND id_paquete = NEW.paquete) THEN
+        UPDATE VentasDiarias
         SET total_ventas = total_venta
         WHERE fecha = NEW.fecha AND id_paquete = NEW.paquete;
     ELSE
-        INSERT INTO VentasPorDia (fecha, id_paquete, total_ventas)
+        INSERT INTO VentasDiarias (fecha, id_paquete, total_ventas)
         VALUES (NEW.fecha, NEW.paquete, total_venta);
     END IF;
 END//
