@@ -632,13 +632,31 @@ BEGIN
     WHERE matricula = $matricula;
 END; //
 
-CREATE PROCEDURE sp_AgregarTicket()
+
+CREATE PROCEDURE sp_AgregarTicket(
+	
+    IN $cliente int,
+    IN $operador int,
+    IN $coche int,
+    IN $sucursal int,
+    IN $tipo_pago int,
+    IN $promocion int,
+    IN $comentario VARCHAR(250),
+    IN $fecha date
+    
+)
 BEGIN
-    INSERT INTO ticket (fecha, Hora, Total) VALUES ('2022-01-01', '10:00:00', 100.00);
-    INSERT INTO ticket (fecha, Hora, Total) VALUES ('2022-01-02', '11:00:00', 200.00);
-    INSERT INTO ticket (fecha, Hora, Total) VALUES ('2022-01-03', '12:00:00', 300.00);
-    INSERT INTO ticket (fecha, Hora, Total) VALUES ('2022-01-04', '13:00:00', 400.00);
-    INSERT INTO ticket (fecha, Hora, Total) VALUES ('2022-01-05', '14:00:00', 500.00);
+    
+    Declare Xmsg varchar(250);
+    
+    
+    if exists (select * from ticket where cliente = $cliente and operador = $operador and coche = $coche and sucursal = $sucursal and fecha = $fecha) then
+		set Xmsg = "Ya existe el ticket";
+    else
+		insert into ticket(cliente, operador, coche, sucursal, tipo_contacto, promocion, comentario, fecha)
+        values($cliente, $operador, $coche, $sucursal, $tipo_pago, $promocion, $comentario, $fecha);
+    end if;
+    
 END; //
 
 CREATE PROCEDURE sp_ActualizarTicket(

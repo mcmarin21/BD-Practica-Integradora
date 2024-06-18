@@ -122,7 +122,7 @@ CREATE TABLE ticket (
 	tipo_pago INT NOT NULL,
 	promocion INT,
 	comentario VARCHAR(250),
-    fecha datetime,
+    fecha date,
 	subtotal DECIMAL(8,2),
 	total DECIMAL(8,2),
 	FOREIGN KEY (cliente) REFERENCES cliente(curp),
