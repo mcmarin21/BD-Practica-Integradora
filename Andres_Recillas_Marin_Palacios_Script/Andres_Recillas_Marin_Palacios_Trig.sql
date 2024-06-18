@@ -1,6 +1,6 @@
 USE Autolavado;
 
-CREATE TABLE VentasPorDia (
+CREATE TABLE VentasDiarias (
     fecha DATE NOT NULL,
     id_paquete INT NOT NULL,
     total_ventas DECIMAL(10,2) NOT NULL DEFAULT 0,
